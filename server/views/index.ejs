@@ -1,7 +1,30 @@
 <!DOCTYPE html>
 <head>
     <title>Server Mongodb</title>
+      <script src="socket.io/socket.io.js"></script>
+
+    <script>
+      var socket = io.connect("http://localhost:3000");
+      socket.on("server-send-data", function(data) {
+
+        // dùng để ẩn 1 layout
+        cell32 = document.getElementById("hello");
+        cell32.style.display = "none";
+        document.getElementById("content").append(data);
+      });
+
+      function ad() {
+        socket.emit("client-send-data", "con cac");
+      }
+      socket.on("news", function(data) {
+        console.log(data);
+        socket.emit("my orther event", { my: "data" });
+      });
+    </script>
 </head>
 <body>
     <h1>Chào Bạn Đến Với Server Của App</h1>
+    <h1 id="hello">Xin chao ban</h1>
+     <button onclick="ad()">nhan vao em đi</button>
+    <h2 id="content"></h2>
 </body>

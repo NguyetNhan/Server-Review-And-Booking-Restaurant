@@ -9,11 +9,14 @@ var cookieParser = require('cookie-parser');
 var debug = require('debug')('Server');
 var http = require('http');
 
+var app = express();
+var server = http.createServer(app);
+var io = require('socket.io')(server);
+
 var indexRouter = require('./src/routes/index');
 var configServer = require('./config');
 
 
-var app = express();
 //var port = process.env.port || 3000;
 
 var port = normalizePort(process.env.PORT || configServer.portServer);
@@ -55,7 +58,12 @@ app.use(function (err, req, res, next) {
         res.render('error');
 });
 
-var server = http.createServer(app);
+io.on('connection', function (socket) {
+        console.log('a user connected: ', socket.id);
+        socket.on('disconnect', () => {
+                console.log('user disconnect');
+        });
+});
 
 server.listen(app.get('port'), function () {
         console.log('app listening on port : ', app.get('port'));
