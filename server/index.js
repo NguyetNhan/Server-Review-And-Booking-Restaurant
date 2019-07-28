@@ -14,7 +14,7 @@ var server = http.createServer(app);
 var io = require('socket.io')(server);
 
 var indexRouter = require('./src/routes/index');
-var configServer = require('./config');
+var configServer = require('./src/config');
 
 
 //var port = process.env.port || 3000;

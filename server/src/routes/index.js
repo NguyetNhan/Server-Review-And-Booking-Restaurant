@@ -7,3 +7,4 @@ app.get('/', function (req, res, next) {
         res.render('index');
 });
 
+app.use('/auth', require('./auth'));
