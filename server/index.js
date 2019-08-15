@@ -11,17 +11,18 @@ var http = require('http');
 
 var app = express();
 var server = http.createServer(app);
-var io = require('socket.io')(server);
+//var io = require('socket.io')(server);
+var io = require('./src/socket');
+io.attach(server);
+
 
 var indexRouter = require('./src/routes/index');
 var configServer = require('./src/config');
-
 
 //var port = process.env.port || 3000;
 
 var port = normalizePort(process.env.PORT || configServer.portServer);
 app.set('port', port);
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -64,6 +65,8 @@ io.on('connection', function (socket) {
                 console.log('user disconnect');
         });
 });
+
+
 
 server.listen(app.get('port'), function () {
         console.log('app listening on port : ', app.get('port'));
