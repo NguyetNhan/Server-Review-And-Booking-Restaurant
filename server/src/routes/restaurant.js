@@ -134,3 +134,21 @@ app.put('/confirm-restaurant/:idRestaurant/:idAdmin', async (req, res) => {
                 res.status(500).json(error);
         }
 });
+
+app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        try {
+                const result = await Model.deleteOne({ _id: req.params.idRestaurant });
+                format.message = 'ok';
+                format.data = result;
+                res.json(format);
+        } catch (error) {
+                res.status(500).json(error);
+        }
+});
+
+
