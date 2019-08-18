@@ -110,7 +110,6 @@ app.post('/login', async (req, res) => {
                                 if (req.body.password === result[0].password) {
                                         format.error = false;
                                         format.message = 'Đăng nhập thành công !';
-                                        result[0].password = null;
                                         format.data = result[0];
                                         res.json(format);
                                 } else {
