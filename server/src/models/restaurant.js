@@ -9,7 +9,8 @@ var restaurantSchema = new Schema({
         imageRestaurant: [String],
         phone: Number,
         address: String,
-        status: String
+        status: String,
+        type: String
 });
 
 module.exports = mongoose.model('restaurants', restaurantSchema);
