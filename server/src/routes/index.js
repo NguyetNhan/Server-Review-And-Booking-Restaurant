@@ -9,9 +9,10 @@ app.get('/', function (req, res, next) {
 });
 
 app.get('/chat', function (req, res, next) {
-
         res.render('index');
 });
 
 app.use('/auth', require('./auth'));
 app.use('/restaurant', require('./restaurant'));
+app.use('/menu', require('./menu_restaurant'));
+app.use('/notification', require('./notification'));

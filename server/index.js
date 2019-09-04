@@ -7,13 +7,13 @@ var mongoose = require('mongoose');
 var cookieParser = require('cookie-parser');
 var debug = require('debug')('Server');
 var http = require('http');
+var lodash = require('lodash/array');
 
 var app = express();
 var server = http.createServer(app);
 //var io = require('socket.io')(server);
-var io = require('./src/socket');
+var { io, idClientConnect } = require('./src/socket');
 io.attach(server);
-
 
 var indexRouter = require('./src/routes/index');
 var configServer = require('./src/config');
@@ -52,16 +52,26 @@ app.use(function (err, req, res, next) {
         // set locals, only providing error in development
         res.locals.message = err.message;
         res.locals.error = req.app.get('env') === 'development' ? err : {};
-
         // render the error page
         res.status(err.status || 500);
         res.render('error');
 });
 
+
 io.on('connection', function (socket) {
-        console.log('a user connected: ', socket.id);
+        socket.on('idAccount', (data) => {
+                idClientConnect.push({
+                        idSocket: socket.id,
+                        idAccount: data
+                });
+        });
+        socket.on('test', (data) => {
+
+        });
         socket.on('disconnect', () => {
-                console.log('user disconnect');
+                lodash.remove(idClientConnect, (item) => {
+                        return item.idSocket === socket.id;
+                });
         });
 });
 

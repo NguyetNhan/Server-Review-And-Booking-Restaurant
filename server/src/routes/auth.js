@@ -33,6 +33,7 @@ app.post('/signup', async (req, res) => {
                                 image: req.body.image,
                                 phone: parseInt(req.body.phone),
                                 authorities: 'client',
+                                date_register: Date.now()
                         };
                         try {
                                 var options = {

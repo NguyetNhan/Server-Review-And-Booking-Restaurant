@@ -10,7 +10,10 @@ var restaurantSchema = new Schema({
         phone: Number,
         address: String,
         status: String,
-        type: String
+        type: String,
+        time_activity: String,
+        follow: Number,
+        date_register: Date
 });
 
 module.exports = mongoose.model('restaurants', restaurantSchema);
