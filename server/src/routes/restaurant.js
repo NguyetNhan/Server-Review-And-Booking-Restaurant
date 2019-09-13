@@ -374,7 +374,11 @@ app.post('/register-restaurant', async (req, res) => {
                                         type: req.body.type,
                                         time_activity: req.body.time_activity,
                                         follow: 0,
-                                        date_register: Date.now()
+                                        date_register: Date.now(),
+                                        position: {
+                                                latitude: req.body.latitude,
+                                                longitude: req.body.longitude
+                                        }
                                 };
                                 try {
                                         const resultRestaurant = await Model.find({ idAdmin: data.idAdmin });
@@ -382,7 +386,6 @@ app.post('/register-restaurant', async (req, res) => {
                                         if (resultRestaurant.length > 0) {
                                                 format.error = true;
                                                 format.message = 'Mỗi tài khoản chỉ đăng kí được 1 nhà hàng !';
-                                                //   format.data = results;
                                                 res.json(format);
                                         } else {
                                                 const results = await Model.create(data);

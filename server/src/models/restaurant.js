@@ -13,7 +13,11 @@ var restaurantSchema = new Schema({
         type: String,
         time_activity: String,
         follow: Number,
-        date_register: Date
+        date_register: Date,
+        position: {
+                latitude: Number,
+                longitude: Number
+        }
 });
 
 module.exports = mongoose.model('restaurants', restaurantSchema);

@@ -16,3 +16,4 @@ app.use('/auth', require('./auth'));
 app.use('/restaurant', require('./restaurant'));
 app.use('/menu', require('./menu_restaurant'));
 app.use('/notification', require('./notification'));
+app.use('/map', require('./map'));
