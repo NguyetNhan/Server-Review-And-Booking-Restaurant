@@ -272,14 +272,12 @@ app.get('/idAdminRestaurant/:id', async (req, res) => {
         };
         const idAdminRestaurant = req.params.id;
         try {
-                const result = await Model.find({ idAdmin: idAdminRestaurant });
-                if (result.length === 1) {
-                        format.message = 'ok';
-                        format.data = result[0];
+                const result = await Model.findOne({ idAdmin: idAdminRestaurant });
+                if (result === null) {
+                        format.message = 'Tài khoản không có nhà hàng đăng kí';
                         res.json(format);
                 } else {
-                        format.error = true;
-                        format.message = 'Tài khoản chưa đăng kí nhà hàng !';
+                        format.message = 'ok';
                         format.data = result;
                         res.json(format);
                 }
