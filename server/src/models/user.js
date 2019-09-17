@@ -6,7 +6,7 @@ var userSchema = new Schema({
         name: String,
         email: String,
         password: String,
-        image: String,
+        avatar: String,
         phone: Number,
         authorities: String,
         date_register: Date

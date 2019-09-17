@@ -30,7 +30,7 @@ app.post('/signup', async (req, res) => {
                                 name: req.body.name,
                                 email: req.body.email,
                                 password: req.body.password,
-                                image: req.body.image,
+                                avatar: null,
                                 phone: parseInt(req.body.phone),
                                 authorities: 'client',
                                 date_register: Date.now()

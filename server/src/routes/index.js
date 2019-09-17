@@ -1,9 +1,5 @@
 var app = module.exports = require('express')();
-//var router = express.Router();
-//var app = express();
 
-
-/* GET home page. */
 app.get('/', function (req, res, next) {
         res.render('index');
 });
@@ -17,3 +13,4 @@ app.use('/restaurant', require('./restaurant'));
 app.use('/menu', require('./menu_restaurant'));
 app.use('/notification', require('./notification'));
 app.use('/map', require('./map'));
+app.use('/order', require('./order'));

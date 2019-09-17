@@ -5,6 +5,7 @@ var notificationSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idAccount: String,
         idRestaurant: String,
+        idOrder: String,
         title: String,
         content: String,
         image: String,
