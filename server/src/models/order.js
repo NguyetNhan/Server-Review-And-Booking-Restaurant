@@ -9,7 +9,10 @@ var orderSchema = new Schema({
         customerEmail: String,
         customerPhone: Number,
         amountPerson: Number,
-        food: [String],
+        food: [{
+                idFood: String,
+                amount: Number
+        }],
         receptionTime: Date,
         orderTime: Date,
         totalMoney: Number,

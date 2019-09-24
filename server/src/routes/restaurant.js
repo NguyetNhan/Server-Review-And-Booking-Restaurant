@@ -7,7 +7,6 @@ const multer = require('multer');
 const path = require('path');
 
 const { idClientConnect, io } = require('../socket');
-
 const storage = multer.diskStorage({
         destination: function (req, file, callback) {
                 callback(null, './public/uploads');
@@ -141,7 +140,6 @@ app.get('/list-restaurant/type/:type/page/:page', async (req, res) => {
                                         }
                                 }
                         }
-
                 } else if (data.type === 'coffee') {
                         const countItem = await Model.countDocuments({ type: 'coffee' });
                         format.count_item = countItem;

@@ -20,7 +20,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
         try {
                 const idAccount = req.params.id;
                 const page = parseInt(req.params.page);
-                const countItem = await Model.countDocuments();
+                const countItem = await Model.countDocuments({ idAccount: idAccount });
                 format.count_item = countItem;
                 let total_page = countItem / 10;
                 if (countItem === 0) {
@@ -56,7 +56,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
                                         }
                                 } else {
                                         format.page = page;
-                                        const results = await Model.find({ idAccount: idAccount }).skip((page - 1) * 10).limit(10);
+                                        const results = await Model.find({ idAccount: idAccount }).sort({ time: -1 }).skip((page - 1) * 10).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';
                                                 format.data = results;

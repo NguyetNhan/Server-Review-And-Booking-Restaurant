@@ -22,18 +22,22 @@ const upload = multer({
         }
 }).single('menu');
 
-
-app.get('/idRestaurant/:id', async (req, res) => {
+app.get('/id/:id', async (req, res) => {
         var format = {
                 error: false,
                 message: '',
                 data: null
         };
-        const idRestaurant = req.params.id;
+        const id = req.params.id;
         try {
-                const results = await Model.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 });
-                format.message = 'ok';
-                format.data = results;
+                const results = await Model.findById(id);
+                if (results === null) {
+                        format.error = true;
+                        format.message = 'Mã ID không chính xác !';
+                } else {
+                        format.message = 'ok';
+                        format.data = results;
+                }
                 res.json(format);
         } catch (error) {
                 format.error = true;
@@ -41,7 +45,69 @@ app.get('/idRestaurant/:id', async (req, res) => {
                 format.data = error;
                 res.status(500).json(format);
         }
-})
+});
+app.get('/idRestaurant/:id/page/:page', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                page: 1,
+                total_page: '',
+                count_item: '',
+                data: null
+        };
+        const idRestaurant = req.params.id;
+        const page = parseInt(req.params.page);
+        const countItem = await Model.countDocuments({ idRestaurant: idRestaurant });
+        format.count_item = countItem;
+        let total_page = countItem / 10;
+        if (countItem === 0) {
+                format.message = 'Không có món ăn !';
+                format.page = page;
+                format.total_page = total_page;
+                format.data = [];
+                res.json(format);
+        } else {
+                if (Number.isInteger(total_page)) {
+                        format.total_page = total_page;
+                } else {
+                        total_page = parseInt(total_page);
+                        format.total_page = total_page + 1;
+                }
+                if (page > format.total_page || page === 0) {
+                        format.error = true;
+                        format.page = page;
+                        format.message = 'Nhập số trang sai !';
+                        res.json(format);
+                } else {
+                        if (page === 1) {
+                                const results = await Model.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).limit(10);
+                                if (results.length > 0) {
+                                        format.message = 'ok';
+                                        format.data = results;
+                                        res.json(format);
+                                } else {
+                                        format.error = false;
+                                        format.message = 'Không có món ăn !';
+                                        format.data = results;
+                                        res.json(format);
+                                }
+                        } else {
+                                format.page = page;
+                                const results = await Model.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).skip((page - 1) * 10).limit(10);
+                                if (results.length > 0) {
+                                        format.message = 'ok';
+                                        format.data = results;
+                                        res.json(format);
+                                } else {
+                                        format.error = false;
+                                        format.message = 'Không có món ăn !';
+                                        format.data = results;
+                                        res.json(format);
+                                }
+                        }
+                }
+        }
+});
 app.post('/add-menu', async (req, res) => {
         await upload(req, res, async (err) => {
                 var format = {
