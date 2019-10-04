@@ -2,6 +2,28 @@ var app = module.exports = require('express')();
 var Model = require('../models/user');
 var lodash = require('lodash');
 
+app.get('/id/:id', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const id = req.params.id;
+        try {
+                const result = await Model.findById(id);
+                if (result !== null) {
+                        format.message = 'ok';
+                        format.data = result;
+                        res.json(format);
+                }
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                format.data = error;
+                res.status(500).json(format);
+        }
+})
+
 app.post('/signup', async (req, res) => {
         var format = {
                 error: false,

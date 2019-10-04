@@ -6,6 +6,7 @@ var notificationSchema = new Schema({
         idAccount: String,
         idRestaurant: String,
         idOrder: String,
+        idReview: String,
         title: String,
         content: String,
         image: String,

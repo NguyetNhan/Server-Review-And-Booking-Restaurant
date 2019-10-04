@@ -369,7 +369,6 @@ app.post('/register-restaurant', async (req, res) => {
                                         status: 'waiting',
                                         type: req.body.type,
                                         time_activity: req.body.time_activity,
-                                        follow: 0,
                                         date_register: Date.now(),
                                         position: {
                                                 latitude: req.body.latitude,
@@ -393,9 +392,9 @@ app.post('/register-restaurant', async (req, res) => {
                                                         idRestaurant: results._id,
                                                         idAccount: accountAdmin._id,
                                                         title: account.name,
-                                                        content: `đã gửi thông tin đăng kí nhà hàng ${(data.name).toLowerCase()} cho bạn !`,
+                                                        content: `đã gửi thông tin đăng kí nhà hàng ${(data.name)} cho bạn !`,
                                                         image: image[0],
-                                                        type: 'register_restaurant',
+                                                        type: 'register',
                                                         time: Date.now()
                                                 });
                                                 const indexId = lodash.findIndex(idClientConnect, (item) => {
@@ -408,7 +407,10 @@ app.post('/register-restaurant', async (req, res) => {
                                                 res.json(format);
                                         }
                                 } catch (error) {
-                                        console.log('error: ', error);
+                                        format.error = true;
+                                        format.message = error.message;
+                                        format.data = error;
+                                        res.status(500).json(format);
                                 }
                         }
                 }
@@ -432,13 +434,16 @@ app.put('/confirm-restaurant/:idRestaurant/:idAdmin', async (req, res) => {
                         title: restaurant.name,
                         content: 'đã được chấp nhận !',
                         image: restaurant.imageRestaurant[0],
-                        type: 'register_restaurant_succeeded',
+                        type: 'register',
                         time: Date.now()
                 });
                 format.message = 'ok';
                 res.json(format);
         } catch (error) {
-                res.status(500).json(error);
+                format.error = true;
+                format.message = error.message;
+                format.data = error;
+                res.status(500).json(format);
         }
 });
 
@@ -457,7 +462,7 @@ app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {
                         title: restaurant.name,
                         content: 'không được chấp nhận !',
                         image: restaurant.imageRestaurant[0],
-                        type: 'register_restaurant_failed',
+                        type: 'register',
                         time: Date.now()
                 });
                 format.message = 'ok';

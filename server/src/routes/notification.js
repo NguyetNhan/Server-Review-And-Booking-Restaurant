@@ -43,6 +43,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
                                 res.json(format);
                         } else {
                                 if (page === 1) {
+                                        format.page = page;
                                         const results = await Model.find({ idAccount: idAccount }).sort({ time: -1 }).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';

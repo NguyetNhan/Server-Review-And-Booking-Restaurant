@@ -12,7 +12,6 @@ var restaurantSchema = new Schema({
         status: String,
         type: String,
         time_activity: String,
-        follow: Number,
         date_register: Date,
         position: {
                 latitude: Number,

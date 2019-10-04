@@ -4,7 +4,6 @@ const ModelNotification = require('../models/notification');
 const ModelRestaurant = require('../models/restaurant');
 const ModelUser = require('../models/user');
 
-
 app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
         var format = {
                 error: false,
@@ -214,6 +213,7 @@ app.post('/add-order', async (req, res) => {
                         totalMoney: Number.parseFloat(req.body.totalMoney),
                         note: req.body.note,
                         status: 'waiting',
+                        review: false
                 };
                 const results = await ModelOrder.create(data);
                 if (results === null) {
@@ -246,7 +246,7 @@ app.post('/add-order', async (req, res) => {
         }
 });
 
-app.put('/confirm-order/idOrder/:idOrder/status/:status', async (req, res) => {
+app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', async (req, res) => {
         var format = {
                 error: false,
                 messages: '',
@@ -254,16 +254,120 @@ app.put('/confirm-order/idOrder/:idOrder/status/:status', async (req, res) => {
         };
         const idOrder = req.params.idOrder;
         const status = req.params.status;
+        const idAccount = req.params.idAccount;
         try {
-                const results = await ModelOrder.findByIdAndUpdate(idOrder, { $set: { status: status } }, { useFindAndModify: false });
-                if (status === 'activity') {
-                        format.messages = 'Đã xác nhận thành công !';
-                } else if (status === 'cancel') {
-                        format.messages = 'Đã hủy thành công !';
-                } else if (status === 'complete') {
-                        format.messages = 'Đã xác nhận thành công !';
+                const order = await ModelOrder.findById(idOrder);
+                if (order === null) {
+                        format.error = true;
+                        format.messages = 'ID đơn hàng không chính xác !';
+                } else {
+                        const results = await ModelOrder.findByIdAndUpdate(idOrder, { $set: { status: status } }, { useFindAndModify: false });
+                        if (results === null) {
+                                format.error = true;
+                                format.messages = 'ID đơn hàng không chính xác !';
+                        } else {
+                                const restaurant = await ModelRestaurant.findById(order.idRestaurant);
+                                if (restaurant === null) {
+                                        format.error = true;
+                                        format.messages = 'Nhà hàng không tồn tại !';
+                                } else {
+                                        if (status === 'activity') {
+                                                const notification = {
+                                                        idAccount: results.idClient,
+                                                        idOrder: results._id,
+                                                        title: restaurant.name,
+                                                        content: `Đơn hàng ID ${idOrder} đã được xác nhận !`,
+                                                        image: restaurant.imageRestaurant[0],
+                                                        type: 'order',
+                                                        time: Date.now()
+                                                };
+                                                await ModelNotification.create(notification);
+                                                format.messages = 'Đã xác nhận thành công !';
+                                        } else if (status === 'cancel') {
+                                                const accountAdmin = await ModelUser.findById(restaurant.idAdmin);
+                                                const accountClient = await ModelUser.findById(order.idClient);
+                                                if (idAccount === order.idClient) {
+                                                        const notification = {
+                                                                idAccount: accountAdmin._id,
+                                                                idOrder: order._id,
+                                                                title: order.customerName,
+                                                                content: `Đã hủy đơn hàng ID ${idOrder} !`,
+                                                                image: accountClient.avatar,
+                                                                type: 'order',
+                                                                time: Date.now()
+                                                        };
+                                                        await ModelNotification.create(notification);
+                                                } else if (idAccount === restaurant.idAdmin) {
+                                                        const notification = {
+                                                                idAccount: accountClient._id,
+                                                                idOrder: order._id,
+                                                                title: restaurant.name,
+                                                                content: `Không chấp nhận đơn hàng ID ${idOrder} của bạn !`,
+                                                                image: restaurant.imageRestaurant[0],
+                                                                type: 'order',
+                                                                time: Date.now()
+                                                        };
+                                                        await ModelNotification.create(notification);
+                                                }
+                                                format.messages = 'Đã hủy thành công !';
+                                        }
+                                        format.data = results;
+                                }
+                        }
                 }
-                format.data = results;
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.messages = error.message;
+                format.data = error;
+                res.status(500).json(format);
+        }
+});
+
+app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', async (req, res) => {
+        var format = {
+                error: false,
+                messages: '',
+                data: null
+        };
+        const idOrder = req.params.idOrder;
+        const idAdmin = req.params.idAdmin;
+        try {
+                const restaurant = await ModelRestaurant.findOne({ idAdmin: idAdmin });
+                if (restaurant === null) {
+                        format.error = true;
+                        format.messages = 'Mã ID Admin không chính xác !';
+                } else {
+                        const order = await ModelOrder.findOne({ idRestaurant: restaurant._id, _id: idOrder });
+                        if (order === null) {
+                                format.error = true;
+                                format.messages = 'Mã đơn hàng không tồn tại hoặc không chính xác !';
+                        } else {
+                                if (order.status === 'review') {
+                                        format.error = true;
+                                        format.messages = 'Đơn hàng đã được xác nhận trước đây !';
+                                } else {
+                                        const results = await ModelOrder.findOneAndUpdate({ idRestaurant: restaurant._id, _id: idOrder }, { $set: { status: 'review' } }, { useFindAndModify: false });
+                                        if (results === null) {
+                                                format.error = true;
+                                                format.messages = 'Mã đơn hàng không tồn tại hoặc không chính xác !';
+                                        } else {
+                                                const notification = {
+                                                        idAccount: results.idClient,
+                                                        idOrder: results._id,
+                                                        title: restaurant.name,
+                                                        content: `Đơn hàng ID ${idOrder} đã hoàn thành, hãy cho chúng tôi biết nhận xét của bạn để cải thiện chất lượng tốt hơn !`,
+                                                        image: restaurant.imageRestaurant[0],
+                                                        type: 'order',
+                                                        time: Date.now()
+                                                };
+                                                await ModelNotification.create(notification);
+                                                format.messages = 'Xác nhận đơn hàng thành công !';
+                                                format.data = results;
+                                        }
+                                }
+                        }
+                }
                 res.json(format);
         } catch (error) {
                 format.error = true;

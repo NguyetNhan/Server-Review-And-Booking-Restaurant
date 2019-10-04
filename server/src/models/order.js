@@ -18,6 +18,7 @@ var orderSchema = new Schema({
         totalMoney: Number,
         note: String,
         status: String,
+        review: Boolean
 });
 
 module.exports = mongoose.model('orders', orderSchema);
