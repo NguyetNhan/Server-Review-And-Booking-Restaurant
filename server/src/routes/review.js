@@ -65,7 +65,7 @@ app.get('/idReviewReceiver/:idReviewReceiver/page/:page', async (req, res) => {
                                         format.message = 'Nhập số trang sai !';
                                 } else {
                                         if (page === 1) {
-                                                const results = await ModelReview.find({ idReviewReceiver: idReviewReceiver }).sort({ date: -1 }).limit(10);
+                                                const results = await ModelReview.find({ idReviewReceiver: idReviewReceiver }).sort({ createDate: -1 }).limit(10);
                                                 if (results.length > 0) {
                                                         format.message = 'ok';
                                                         format.data = results;
@@ -76,7 +76,7 @@ app.get('/idReviewReceiver/:idReviewReceiver/page/:page', async (req, res) => {
                                                 }
                                         } else {
                                                 format.page = page;
-                                                const results = await ModelReview.find({ idReviewReceiver: idReviewReceiver }).sort({ date: -1 }).skip((page - 1) * 10).limit(10);
+                                                const results = await ModelReview.find({ idReviewReceiver: idReviewReceiver }).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
                                                 if (results.length > 0) {
                                                         format.message = 'ok';
                                                         format.data = results;
@@ -175,7 +175,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                 data = {
                                         content: req.body.content,
                                         score: Number.parseInt(req.body.score),
-                                        date: Date.now(),
+                                        createDate: Date.now(),
                                 };
                         } else {
                                 for (let item of req.files) {
@@ -185,7 +185,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                         imageReview: image,
                                         content: req.body.content,
                                         score: Number.parseInt(req.body.score),
-                                        date: Date.now(),
+                                        createDate: Date.now(),
                                 };
                         }
 
@@ -200,6 +200,15 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                         const restaurant = await ModelRestaurant.findById(idReviewReceiver);
                                         const client = await ModelUser.findById(idReviewAccount);
                                         if (restaurant !== null) {
+                                                const listReview = await ModelReview.find({ idReviewReceiver: restaurant._id });
+                                                if (listReview.length > 0) {
+                                                        let sumScore = 0;
+                                                        for (item of listReview) {
+                                                                sumScore = sumScore + item.score;
+                                                        }
+                                                        mediumScore = sumScore / listReview.length;
+                                                        await ModelRestaurant.findByIdAndUpdate(restaurant._id, { $set: { star: mediumScore } }, { useFindAndModify: false });
+                                                }
                                                 if (restaurant.type === 'restaurant') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
@@ -209,7 +218,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                                 content: `đã cập nhật lại nhận xét cho nhà hàng ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
                                                                 type: 'review',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         });
                                                 } else if (restaurant.type === 'coffee') {
                                                         await ModelNotification.create({
@@ -220,12 +229,21 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                                 content: `đã cập nhật lại nhận xét cho quán coffee ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
                                                                 type: 'review',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         });
                                                 }
                                         } else {
                                                 const food = await ModelMenu.findById(idReviewReceiver);
                                                 if (food !== null) {
+                                                        const listReview = await ModelReview.find({ idReviewReceiver: food._id });
+                                                        if (listReview.length > 0) {
+                                                                let sumScore = 0;
+                                                                for (item of listReview) {
+                                                                        sumScore = sumScore + item.score;
+                                                                }
+                                                                mediumScore = sumScore / listReview.length;
+                                                                await ModelMenu.findByIdAndUpdate(food._id, { $set: { star: mediumScore } }, { useFindAndModify: false });
+                                                        }
                                                         const restaurant = await ModelRestaurant.findById(food.idRestaurant);
                                                         if (restaurant.type === 'restaurant') {
                                                                 await ModelNotification.create({
@@ -236,7 +254,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                                         content: `đã cập nhật lại nhận xét cho món ${food.name} trong thực đơn nhà hàng ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
                                                                         type: 'review',
-                                                                        time: Date.now()
+                                                                        createDate: Date.now()
                                                                 });
                                                         } else if (restaurant.type === 'coffee') {
                                                                 await ModelNotification.create({
@@ -247,7 +265,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                                         content: `đã cập nhật lại nhận xét cho món ${food.name} trong thực đơn quán coffee ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
                                                                         type: 'review',
-                                                                        time: Date.now()
+                                                                        createDate: Date.now()
                                                                 });
                                                         }
                                                 }
@@ -289,7 +307,7 @@ app.post('/add-review', async (req, res) => {
                                 imageReview: image,
                                 content: req.body.content,
                                 score: Number.parseInt(req.body.score),
-                                date: Date.now(),
+                                createDate: Date.now()
                         };
                         try {
                                 const review = await ModelReview.create(data);
@@ -299,6 +317,15 @@ app.post('/add-review', async (req, res) => {
                                         const restaurant = await ModelRestaurant.findById(data.idReviewReceiver);
                                         const client = await ModelUser.findById(data.idReviewAccount);
                                         if (restaurant !== null) {
+                                                const listReview = await ModelReview.find({ idReviewReceiver: restaurant._id });
+                                                if (listReview.length > 0) {
+                                                        let sumScore = 0;
+                                                        for (item of listReview) {
+                                                                sumScore = sumScore + item.score;
+                                                        }
+                                                        mediumScore = sumScore / listReview.length;
+                                                        await ModelRestaurant.findByIdAndUpdate(restaurant._id, { $set: { star: mediumScore } }, { useFindAndModify: false });
+                                                }
                                                 if (restaurant.type === 'restaurant') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
@@ -308,7 +335,7 @@ app.post('/add-review', async (req, res) => {
                                                                 content: `đã đánh giá ${data.score} sao cho nhà hàng ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
                                                                 type: 'review',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         });
                                                 } else if (restaurant.type === 'coffee') {
                                                         await ModelNotification.create({
@@ -319,12 +346,21 @@ app.post('/add-review', async (req, res) => {
                                                                 content: `đã đánh giá ${data.score} sao cho quán coffee ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
                                                                 type: 'review',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         });
                                                 }
                                         } else {
                                                 const food = await ModelMenu.findById(data.idReviewReceiver);
                                                 if (food !== null) {
+                                                        const listReview = await ModelReview.find({ idReviewReceiver: food._id });
+                                                        if (listReview.length > 0) {
+                                                                let sumScore = 0;
+                                                                for (item of listReview) {
+                                                                        sumScore = sumScore + item.score;
+                                                                }
+                                                                mediumScore = sumScore / listReview.length;
+                                                                await ModelMenu.findByIdAndUpdate(food._id, { $set: { star: mediumScore } }, { useFindAndModify: false });
+                                                        }
                                                         const restaurant = await ModelRestaurant.findById(food.idRestaurant);
                                                         if (restaurant.type === 'restaurant') {
                                                                 await ModelNotification.create({
@@ -335,7 +371,7 @@ app.post('/add-review', async (req, res) => {
                                                                         content: `đã đánh giá ${data.score} sao cho món ${food.name} trong thực đơn nhà hàng ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
                                                                         type: 'review',
-                                                                        time: Date.now()
+                                                                        createDate: Date.now()
                                                                 });
                                                         } else if (restaurant.type === 'coffee') {
                                                                 await ModelNotification.create({
@@ -346,7 +382,7 @@ app.post('/add-review', async (req, res) => {
                                                                         content: `đã đánh giá ${data.score} sao cho món ${food.name} trong thực đơn quán coffee ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
                                                                         type: 'review',
-                                                                        time: Date.now()
+                                                                        createDate: Date.now()
                                                                 });
                                                         }
                                                 }

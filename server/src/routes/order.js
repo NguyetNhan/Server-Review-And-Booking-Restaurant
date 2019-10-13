@@ -25,7 +25,7 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                         res.json(format);
                 } else {
                         var options = {};
-                        if (filter === 'waiting' || filter === 'activity' || filter === 'complete' || filter === 'cancel') {
+                        if (filter === 'waiting' || filter === 'activity' || filter === 'complete' || filter === 'review' || filter === 'cancel') {
                                 options = {
                                         status: filter,
                                         idRestaurant: restaurant._id
@@ -56,7 +56,7 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                                 res.json(format);
                         } else {
                                 if (page === 1) {
-                                        const resultOrder = await ModelOrder.find(options).sort({ orderTime: -1 }).limit(10);
+                                        const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).limit(10);
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
                                         } else {
@@ -66,7 +66,7 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                                         res.json(format);
                                 } else {
                                         format.page = page;
-                                        const resultOrder = await ModelOrder.find(options).sort({ orderTime: -1 }).skip((page - 1) * 10).limit(10);
+                                        const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
                                         } else {
@@ -105,7 +105,7 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                         res.json(format);
                 } else {
                         var options = {};
-                        if (filter === 'waiting' || filter === 'activity' || filter === 'complete' || filter === 'cancel') {
+                        if (filter === 'waiting' || filter === 'activity' || filter === 'complete' || filter === 'review' || filter === 'cancel') {
                                 options = {
                                         status: filter,
                                         idClient: idClient
@@ -136,7 +136,7 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                                 res.json(format);
                         } else {
                                 if (page === 1) {
-                                        const resultOrder = await ModelOrder.find(options).sort({ orderTime: -1 }).limit(10);
+                                        const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).limit(10);
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
                                         } else {
@@ -146,7 +146,7 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                                         res.json(format);
                                 } else {
                                         format.page = page;
-                                        const resultOrder = await ModelOrder.find(options).sort({ orderTime: -1 }).skip((page - 1) * 10).limit(10);
+                                        const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
                                         } else {
@@ -209,18 +209,18 @@ app.post('/add-order', async (req, res) => {
                         amountPerson: Number.parseInt(req.body.amountPerson),
                         food: req.body.food,
                         receptionTime: req.body.receptionTime,
-                        orderTime: Date.now(),
                         totalMoney: Number.parseFloat(req.body.totalMoney),
+                        totalMoneyFood: Number.parseFloat(req.body.totalMoneyFood),
+                        discount: req.body.discount,
                         note: req.body.note,
                         status: 'waiting',
-                        review: false
+                        createDate: Date.now()
                 };
                 const results = await ModelOrder.create(data);
                 if (results === null) {
                         format.error = true;
                         format.messages = 'Không thêm vào được!';
                         format.data = null;
-                        res.json(format);
                 } else {
                         const restaurant = await ModelRestaurant.findById(results.idRestaurant);
                         const user = await ModelUser.findById(results.idClient);
@@ -231,13 +231,13 @@ app.post('/add-order', async (req, res) => {
                                 content: 'đã đặt tiệc nhà hàng của bạn !',
                                 image: null,
                                 type: 'order',
-                                time: Date.now()
+                                createDate: Date.now()
                         };
                         await ModelNotification.create(notification);
                         format.messages = 'Đặt tiệc thành công !';
                         format.data = results;
-                        res.json(format);
                 }
+                res.json(format);
         } catch (error) {
                 format.error = true;
                 format.messages = error.message;
@@ -279,7 +279,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                                         content: `Đơn hàng ID ${idOrder} đã được xác nhận !`,
                                                         image: restaurant.imageRestaurant[0],
                                                         type: 'order',
-                                                        time: Date.now()
+                                                        createDate: Date.now()
                                                 };
                                                 await ModelNotification.create(notification);
                                                 format.messages = 'Đã xác nhận thành công !';
@@ -294,7 +294,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                                                 content: `Đã hủy đơn hàng ID ${idOrder} !`,
                                                                 image: accountClient.avatar,
                                                                 type: 'order',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         };
                                                         await ModelNotification.create(notification);
                                                 } else if (idAccount === restaurant.idAdmin) {
@@ -305,7 +305,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                                                 content: `Không chấp nhận đơn hàng ID ${idOrder} của bạn !`,
                                                                 image: restaurant.imageRestaurant[0],
                                                                 type: 'order',
-                                                                time: Date.now()
+                                                                createDate: Date.now()
                                                         };
                                                         await ModelNotification.create(notification);
                                                 }
@@ -352,14 +352,20 @@ app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', asy
                                                 format.error = true;
                                                 format.messages = 'Mã đơn hàng không tồn tại hoặc không chính xác !';
                                         } else {
+                                                const percent = (order.totalMoneyFood * 5) / 100;
+                                                const user = await ModelUser.findById(results.idClient);
+                                                if (user !== null) {
+                                                        const totalPercent = (Number.parseInt(percent)) + user.score;
+                                                        await ModelUser.findByIdAndUpdate(results.idClient, { $set: { score: totalPercent } }, { useFindAndModify: false });
+                                                }
                                                 const notification = {
                                                         idAccount: results.idClient,
                                                         idOrder: results._id,
                                                         title: restaurant.name,
-                                                        content: `Đơn hàng ID ${idOrder} đã hoàn thành, hãy cho chúng tôi biết nhận xét của bạn để cải thiện chất lượng tốt hơn !`,
+                                                        content: `Đơn hàng ID ${idOrder} đã hoàn thành, bạn nhận được ${Number.parseInt(percent)} điểm cộng từ giá trị đơn hàng, hãy cho chúng tôi biết nhận xét của bạn để cải thiện chất lượng tốt hơn !`,
                                                         image: restaurant.imageRestaurant[0],
                                                         type: 'order',
-                                                        time: Date.now()
+                                                        createDate: Date.now()
                                                 };
                                                 await ModelNotification.create(notification);
                                                 format.messages = 'Xác nhận đơn hàng thành công !';

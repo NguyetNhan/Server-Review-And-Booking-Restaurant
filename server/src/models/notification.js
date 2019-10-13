@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var notificationSchema = new Schema({
+var NotificationSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idAccount: String,
         idRestaurant: String,
@@ -11,7 +11,7 @@ var notificationSchema = new Schema({
         content: String,
         image: String,
         type: String,
-        time: Date
+        createDate: Date,
 });
 
-module.exports = mongoose.model('notifications', notificationSchema);
+module.exports = mongoose.model('notifications', NotificationSchema);

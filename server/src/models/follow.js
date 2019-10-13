@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const followSchema = new Schema({
+const FollowSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idAccountFollow: String,
         idRestaurantFollow: String,
-        date: Date,
+        createDate: Date,
 });
 
-module.exports = mongoose.model('follows', followSchema);
+module.exports = mongoose.model('follows', FollowSchema);

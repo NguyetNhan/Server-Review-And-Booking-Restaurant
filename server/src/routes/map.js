@@ -10,7 +10,7 @@ distance.language('vn');
 app.get('/closest-distance/latitude/:latitude/longitude/:longitude', async (req, res) => {
         var format = {
                 error: false,
-                messages: '',
+                message: '',
                 data: null
         };
         try {
@@ -29,6 +29,7 @@ app.get('/closest-distance/latitude/:latitude/longitude/:longitude', async (req,
                                         name: item.name,
                                         introduce: item.introduce,
                                         idAdmin: item.idAdmin,
+                                        star: item.star,
                                         imageRestaurant: item.imageRestaurant,
                                         phone: item.phone,
                                         address: item.address,
@@ -36,7 +37,7 @@ app.get('/closest-distance/latitude/:latitude/longitude/:longitude', async (req,
                                         type: item.type,
                                         time_activity: item.time_activity,
                                         follow: item.follow,
-                                        date_register: item.date_register,
+                                        createDate: item.createDate,
                                         position: {
                                                 latitude: item.position.latitude,
                                                 longitude: item.position.longitude
@@ -46,13 +47,13 @@ app.get('/closest-distance/latitude/:latitude/longitude/:longitude', async (req,
                         distance.matrix(origins, destinations, function (err, distances) {
                                 if (err) {
                                         format.error = true;
-                                        format.messages = err.message;
+                                        format.message = err.message;
                                         format.data = err;
                                         res.json(format);
                                 }
                                 if (!distances) {
                                         format.error = true;
-                                        format.messages = 'no distances';
+                                        format.message = 'no distances';
                                         format.data = err;
                                         res.json(format);
                                 }
@@ -69,19 +70,17 @@ app.get('/closest-distance/latitude/:latitude/longitude/:longitude', async (req,
                                 listRestaurant.sort((a, b) => {
                                         return a.distance - b.distance;
                                 });
-                                format.messages = 'ok';
+                                format.message = 'ok';
                                 format.data = listRestaurant;
                                 res.json(format);
                         });
                 } else {
-                        format.messages = 'Không có nhà hàng nào !';
+                        format.message = 'Không có nhà hàng nào !';
                         res.json(format);
                 }
         } catch (error) {
-                console.log('error: ', error);
                 format.error = true;
-                format.messages = error.message;
-                format.data = error;
+                format.message = error.message;
                 res.status(500).json(format);
         }
 });

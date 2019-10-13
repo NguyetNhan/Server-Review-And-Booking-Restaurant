@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const friendSchema = new Schema({
+const FriendSchema = new Schema({
         id: mongoose.Types.ObjectId,
-        idFollowAccount: String,
-        idFollowReceiver: String,
-        date: Date,
-        status: String
+        idAccountClient: String,
+        friends: {
+                idAccountFriend: String,
+                status: String,
+                createDate: Date,
+        },
 });
 
-module.exports = mongoose.model('friends', friendSchema);
+module.exports = mongoose.model('friends', FriendSchema);

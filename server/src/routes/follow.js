@@ -45,7 +45,7 @@ app.post('/change-follow', async (req, res) => {
                         const result = await ModelFollow.create({
                                 idAccountFollow: idClient,
                                 idRestaurantFollow: idRestaurant,
-                                date: Date.now(),
+                                createDate: Date.now()
                         });
                         if (result !== null) {
                                 format.message = 'Thêm follow thành công !';

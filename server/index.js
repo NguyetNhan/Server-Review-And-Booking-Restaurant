@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //kết nối database
 //console.log(config.getDBConnetionString());
-mongoose.connect(configServer.urlDatabase, { useNewUrlParser: true });
+mongoose.connect(configServer.urlDatabase, { useNewUrlParser: true, autoIndex: false });
 
 // add router
 app.use(indexRouter);
@@ -59,19 +59,37 @@ app.use(function (err, req, res, next) {
 
 
 io.on('connection', function (socket) {
-        socket.on('idAccount', (data) => {
+        socket.on('infoAccount', (info) => {
                 idClientConnect.push({
                         idSocket: socket.id,
-                        idAccount: data
+                        idAccount: info.idAccount,
+                        location: info.location
                 });
         });
-        socket.on('test', (data) => {
-
+        socket.on('idClientOnline', (fn) => {
+                fn(idClientConnect);
         });
         socket.on('disconnect', () => {
                 lodash.remove(idClientConnect, (item) => {
                         return item.idSocket === socket.id;
                 });
+                io.emit('idClientOnline', idClientConnect);
+        });
+        socket.on('create-room', (data) => {
+                socket.join(data);
+                socket.idRoomChat = data;
+        });
+        socket.on('leave-room-chat', (data) => {
+                socket.leave(data);
+        });
+        socket.on('user-send-message', (data) => {
+                io.sockets.in(socket.idRoomChat).emit('server-send-message-chat', data);
+        });
+        socket.on('user-typing', (data) => {
+                io.sockets.in(socket.idRoomChat).emit('server-send-status-typing', data);
+        });
+        socket.on('user-stop-typing', (data) => {
+                io.sockets.in(socket.idRoomChat).emit('server-send-status-stop-typing', data);
         });
 });
 

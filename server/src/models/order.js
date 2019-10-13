@@ -1,7 +1,11 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-
-var orderSchema = new Schema({
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const DiscountSchema = new Schema({
+        name: String,
+        score: Number,
+        type: String,
+});
+const OrderSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idClient: String,
         idRestaurant: String,
@@ -14,11 +18,13 @@ var orderSchema = new Schema({
                 amount: Number
         }],
         receptionTime: Date,
-        orderTime: Date,
-        totalMoney: Number,
         note: String,
         status: String,
-        review: Boolean
+        review: Boolean,
+        totalMoneyFood: Number,
+        totalMoney: Number,
+        discount: DiscountSchema,
+        createDate: Date,
 });
 
-module.exports = mongoose.model('orders', orderSchema);
+module.exports = mongoose.model('orders', OrderSchema);

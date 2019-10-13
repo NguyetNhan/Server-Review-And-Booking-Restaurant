@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const reviewSchema = new Schema({
+const ReviewSchema = new Schema({
         id: mongoose.Types.ObjectId,
         type: String,
         idReviewAccount: String,
@@ -9,7 +9,7 @@ const reviewSchema = new Schema({
         imageReview: [String],
         content: String,
         score: Number,
-        date: Date,
+        createDate: Date,
 });
 
-module.exports = mongoose.model('reviews', reviewSchema);
+module.exports = mongoose.model('reviews', ReviewSchema);

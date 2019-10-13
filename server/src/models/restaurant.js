@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var restaurantSchema = new Schema({
+var RestaurantSchema = new Schema({
         id: mongoose.Types.ObjectId,
         name: String,
         introduce: String,
@@ -12,11 +12,12 @@ var restaurantSchema = new Schema({
         status: String,
         type: String,
         time_activity: String,
-        date_register: Date,
+        createDate: Date,
+        star: { type: Number, default: 0 },
         position: {
                 latitude: Number,
                 longitude: Number
         }
 });
 
-module.exports = mongoose.model('restaurants', restaurantSchema);
+module.exports = mongoose.model('restaurants', RestaurantSchema);

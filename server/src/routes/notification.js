@@ -44,7 +44,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
                         } else {
                                 if (page === 1) {
                                         format.page = page;
-                                        const results = await Model.find({ idAccount: idAccount }).sort({ time: -1 }).limit(10);
+                                        const results = await Model.find({ idAccount: idAccount }).sort({ createDate: -1 }).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';
                                                 format.data = results;
@@ -57,7 +57,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
                                         }
                                 } else {
                                         format.page = page;
-                                        const results = await Model.find({ idAccount: idAccount }).sort({ time: -1 }).skip((page - 1) * 10).limit(10);
+                                        const results = await Model.find({ idAccount: idAccount }).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';
                                                 format.data = results;

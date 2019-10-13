@@ -1,5 +1,6 @@
 const app = module.exports = require('express')();
-const Model = require('../models/menu_restaurant');
+const ModelMenu = require('../models/menu_restaurant');
+const ModelReview = require('../models/review');
 const lodash = require('lodash');
 const multer = require('multer');
 const path = require('path');
@@ -30,7 +31,7 @@ app.get('/id/:id', async (req, res) => {
         };
         const id = req.params.id;
         try {
-                const results = await Model.findById(id);
+                const results = await ModelMenu.findById(id);
                 if (results === null) {
                         format.error = true;
                         format.message = 'Mã ID không chính xác !';
@@ -46,6 +47,71 @@ app.get('/id/:id', async (req, res) => {
                 res.status(500).json(format);
         }
 });
+
+app.get('/list-food-the-best/page/:page', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                page: 1,
+                total_page: '',
+                count_item: '',
+                data: null
+        };
+        const page = parseInt(req.params.page);
+        try {
+                const countItem = await ModelMenu.countDocuments();
+                format.count_item = countItem;
+                let total_page = countItem / 10;
+                if (countItem === 0) {
+                        format.message = 'Không có món ăn !';
+                        format.page = page;
+                        format.total_page = total_page;
+                        format.data = [];
+                } else {
+                        if (Number.isInteger(total_page)) {
+                                format.total_page = total_page;
+                        } else {
+                                total_page = parseInt(total_page);
+                                format.total_page = total_page + 1;
+                        }
+                        if (page > format.total_page || page === 0) {
+                                format.error = true;
+                                format.page = page;
+                                format.message = 'Nhập số trang sai !';
+                        } else {
+                                if (page === 1) {
+                                        format.page = page;
+                                        const results = await ModelMenu.find().sort({ star: -1 }).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Không có món ăn !';
+                                                format.data = results;
+                                        }
+                                } else {
+                                        format.page = page;
+                                        const results = await ModelMenu.find().sort({ star: -1 }).skip((page - 1) * 10).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Không có món ăn !';
+                                                format.data = results;
+                                        }
+                                }
+                        }
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+})
+
 app.get('/idRestaurant/:id/page/:page', async (req, res) => {
         var format = {
                 error: false,
@@ -57,7 +123,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
         };
         const idRestaurant = req.params.id;
         const page = parseInt(req.params.page);
-        const countItem = await Model.countDocuments({ idRestaurant: idRestaurant });
+        const countItem = await ModelMenu.countDocuments({ idRestaurant: idRestaurant });
         format.count_item = countItem;
         let total_page = countItem / 10;
         if (countItem === 0) {
@@ -80,7 +146,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
                         res.json(format);
                 } else {
                         if (page === 1) {
-                                const results = await Model.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).limit(10);
+                                const results = await ModelMenu.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).limit(10);
                                 if (results.length > 0) {
                                         format.message = 'ok';
                                         format.data = results;
@@ -93,7 +159,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
                                 }
                         } else {
                                 format.page = page;
-                                const results = await Model.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).skip((page - 1) * 10).limit(10);
+                                const results = await ModelMenu.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).skip((page - 1) * 10).limit(10);
                                 if (results.length > 0) {
                                         format.message = 'ok';
                                         format.data = results;
@@ -134,10 +200,10 @@ app.post('/add-menu', async (req, res) => {
                                         introduce: req.body.introduce,
                                         image: image,
                                         price: req.body.price,
-                                        date_add: Date.now()
+                                        createDate: Date.now()
                                 };
                                 try {
-                                        const results = await Model.create(data);
+                                        const results = await ModelMenu.create(data);
                                         format.error = false;
                                         format.message = 'Thêm thành công !';
                                         format.data = results;

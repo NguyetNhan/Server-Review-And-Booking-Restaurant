@@ -14,15 +14,18 @@ app.get('/id/:id', async (req, res) => {
                 if (result !== null) {
                         format.message = 'ok';
                         format.data = result;
-                        res.json(format);
+                } else {
+                        format.error = true;
+                        format.message = 'ID tài khoản không chính xác';
                 }
+                res.json(format);
         } catch (error) {
                 format.error = true;
                 format.message = error.message;
                 format.data = error;
                 res.status(500).json(format);
         }
-})
+});
 
 app.post('/signup', async (req, res) => {
         var format = {
@@ -34,63 +37,47 @@ app.post('/signup', async (req, res) => {
                 if (lodash.isEmpty(req.body.name)) {
                         format.error = true;
                         format.message = 'Tên không được để trống !';
-                        res.json(format);
                 } else if (lodash.isEmpty(req.body.email)) {
                         format.error = true;
                         format.message = 'Email không được để trống !';
-                        res.json(format);
                 } else if (lodash.isEmpty(req.body.password)) {
                         format.error = true;
                         format.message = 'Mật khẩu không được để trống !';
-                        res.json(format);
                 } else if (lodash.isEmpty(req.body.phone)) {
                         format.error = true;
                         format.message = 'Số điện thoại không được để trống !';
-                        res.json(format);
                 } else {
                         var user = {
                                 name: req.body.name,
                                 email: req.body.email,
                                 password: req.body.password,
                                 avatar: null,
+                                score: 0,
                                 phone: parseInt(req.body.phone),
                                 authorities: 'client',
-                                date_register: Date.now()
+                                conversation: [],
+                                createDate: Date.now()
                         };
-                        try {
-                                var options = {
-                                        email: req.body.email
-                                };
-                                const result = await Model.find(options);
-                                if (result.length > 0) {
-                                        format.error = true;
-                                        format.message = 'Tài khoản đã tồn tại !';
-                                        format.data = result[0];
-                                        res.json(format);
-                                } else {
-                                        try {
-                                                var results = await Model.create(user);
-                                                results.password = null;
-                                                format.error = false;
-                                                format.message = 'Tạo tài khoản thành công !';
-                                                format.data = results;
-                                                res.json(format);
-                                        } catch (error) {
-                                                format.error = true;
-                                                format.message = 'Tạo tài khoản không thành công !';
-                                                format.data = error;
-                                                res.json(format);
-                                        }
-                                }
-                        } catch (error) {
+                        var options = {
+                                email: req.body.email
+                        };
+                        const result = await Model.findOne(options);
+                        if (result !== null) {
                                 format.error = true;
-                                format.message = '';
-                                format.data = error;
-                                res.json(format);
+                                format.message = 'Tài khoản đã tồn tại !';
+                        } else {
+                                var results = await Model.create(user);
+                                results.password = null;
+                                format.error = false;
+                                format.message = 'Tạo tài khoản thành công !';
+                                format.data = results;
                         }
                 }
+                res.json(format);
         } catch (error) {
-                console.log('error: ', error);
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
         }
 });
 
@@ -100,54 +87,39 @@ app.post('/login', async (req, res) => {
                 message: '',
                 data: null
         };
-        if (lodash.isEmpty(req.body.email)) {
-                error = true;
-                message = 'Email không được để trống !';
-                let result = {
-                        error: error,
-                        message: message,
-                        data: data
-                };
-                res.json(result);
-        } else if (lodash.isEmpty(req.body.password)) {
-                error = true;
-                message = 'Mật khẩu không được để trống !';
-                let result = {
-                        error: error,
-                        message: message,
-                        data: data
-                };
-                res.json(result);
-        } else {
-                try {
+        try {
+                if (lodash.isEmpty(req.body.email)) {
+                        format.error = true;
+                        format.message = 'Email không được để trống !';
+                } else if (lodash.isEmpty(req.body.password)) {
+                        format.error = true;
+                        format.message = 'Mật khẩu không được để trống !';
+                } else {
                         const options = {
                                 email: req.body.email
                         };
-                        let result = await Model.find(options);
-                        if (result.length === 0) {
+                        let result = await Model.findOne(options);
+                        if (result === null) {
                                 format.error = true;
-                                format.message = 'Email không tồn tại !';
+                                format.message = 'Tài khoản không tồn tại !';
                                 format.data = null;
-                                res.json(format);
                         } else {
-                                if (req.body.password === result[0].password) {
+                                if (req.body.password === result.password) {
                                         format.error = false;
                                         format.message = 'Đăng nhập thành công !';
-                                        format.data = result[0];
-                                        res.json(format);
+                                        format.data = result;
                                 } else {
                                         format.error = true;
                                         format.message = 'Sai mật khẩu !';
-                                        format.data = null;
-                                        res.json(format);
                                 }
                         }
-                } catch (error) {
-                        console.log('error: ', error);
-                        format.error = true;
-                        format.message = error.message;
-                        format.data = error;
-                        res.status(500).json(format);
                 }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                format.data = error;
+                res.status(500).json(format);
         }
+
 });

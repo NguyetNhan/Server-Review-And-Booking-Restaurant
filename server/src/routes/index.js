@@ -17,3 +17,5 @@ app.use('/order', require('./order'));
 app.use('/reviews', require('./review'));
 app.use('/follows', require('./follow'));
 app.use('/search', require('./search'));
+app.use('/conversation', require('./conversation'));
+app.use('/message', require('./message'));
