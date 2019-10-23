@@ -52,7 +52,7 @@ app.get('/place-review-the-best/page/:page', async (req, res) => {
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         const page = parseInt(req.params.page);
         try {
@@ -115,7 +115,7 @@ app.get('/list-restaurant/type/:type/page/:page', async (req, res) => {
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         try {
                 const data = {

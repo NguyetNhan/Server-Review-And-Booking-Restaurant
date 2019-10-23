@@ -19,3 +19,4 @@ app.use('/follows', require('./follow'));
 app.use('/search', require('./search'));
 app.use('/conversation', require('./conversation'));
 app.use('/message', require('./message'));
+app.use('/friend', require('./friend'));

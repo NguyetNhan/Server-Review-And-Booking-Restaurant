@@ -31,7 +31,7 @@ app.get('/idReviewReceiver/:idReviewReceiver/page/:page', async (req, res) => {
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         const idReviewReceiver = req.params.idReviewReceiver;
         const page = parseInt(req.params.page);

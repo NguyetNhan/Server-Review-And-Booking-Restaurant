@@ -12,7 +12,7 @@ app.get('/list-message/idConversation/:idConversation/page/:page', async (req, r
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         const idConversation = req.params.idConversation;
         const page = parseInt(req.params.page);

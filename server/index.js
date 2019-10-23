@@ -63,16 +63,25 @@ io.on('connection', function (socket) {
                 idClientConnect.push({
                         idSocket: socket.id,
                         idAccount: info.idAccount,
-                        location: info.location
+                        location: info.geolocation
                 });
+                console.log('id connect server: ', socket.id, info);
         });
         socket.on('idClientOnline', (fn) => {
                 fn(idClientConnect);
+        });
+        socket.on('logout', (data) => {
+                lodash.remove(idClientConnect, (item) => {
+                        return item.idSocket === socket.id;
+                });
+                console.log('id client disconnect : ', socket.id);
+                io.emit('idClientOnline', idClientConnect);
         });
         socket.on('disconnect', () => {
                 lodash.remove(idClientConnect, (item) => {
                         return item.idSocket === socket.id;
                 });
+                console.log('id client disconnect : ', socket.id);
                 io.emit('idClientOnline', idClientConnect);
         });
         socket.on('create-room', (data) => {

@@ -11,7 +11,7 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                 page: 1,
                 total_page: null,
                 count_item: null,
-                data: null
+                data: []
         };
         const idAdmin = req.params.idAdmin;
         const page = Number.parseInt(req.params.page);
@@ -92,7 +92,7 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                 page: 1,
                 total_page: null,
                 count_item: null,
-                data: null
+                data: []
         };
         const idClient = req.params.idClient;
         const page = Number.parseInt(req.params.page);

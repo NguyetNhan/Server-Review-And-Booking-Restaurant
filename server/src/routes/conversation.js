@@ -36,14 +36,17 @@ app.post('/check-conversation', async (req, res) => {
                                 let listParticipant = [];
                                 listParticipant.push(idAccountSend);
                                 listParticipant.push(idAccountReceiver);
-                                const resultConversation = await ModelConversation.create({ participant: listParticipant });
+                                const resultConversation = await ModelConversation.create({
+                                        participant: listParticipant,
+                                        createDate: Date.now(),
+                                        updateDate: Date.now()
+                                });
                                 if (resultConversation === null) {
                                         format.error = true;
                                         format.message = 'Không tạo được hộp thoại !';
                                 } else {
                                         format.message = 'ok';
                                         format.data = resultConversation._id;
-
                                         let listConversationAccountSend = accountSend.conversation;
                                         const conversationAccountSend = {
                                                 idConversation: resultConversation._id,
@@ -60,7 +63,7 @@ app.post('/check-conversation', async (req, res) => {
                                                 createDate: Date.now()
                                         };
                                         listConversationAccountReceiver.push(conversationAccountReceiver);
-                                        await ModelUser.findByIdAndUpdate(idAccountReceiver, { $set: { conversation: conversationAccountReceiver } }, { useFindAndModify: false });
+                                        await ModelUser.findByIdAndUpdate(idAccountReceiver, { $set: { conversation: listConversationAccountReceiver } }, { useFindAndModify: false });
                                 }
                         }
                 }
@@ -79,7 +82,7 @@ app.get('/list-conversation/idAccount/:idAccount/page/:page', async (req, res) =
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         try {
                 const idAccount = req.params.idAccount;

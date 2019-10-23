@@ -15,7 +15,7 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         try {
                 const idAccount = req.params.id;

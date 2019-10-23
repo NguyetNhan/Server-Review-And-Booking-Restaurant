@@ -7,7 +7,7 @@ app.get('/content-search/:contentSearch', async (req, res) => {
                 error: false,
                 message: '',
                 count_item: null,
-                data: null
+                data: []
         };
         const contentSearch = req.params.contentSearch;
         var filterRestaurant = {};
@@ -117,7 +117,7 @@ app.get('/search-restaurant/content-search/:contentSearch/page/:page', async (re
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         const contentSearch = req.params.contentSearch;
         const page = parseInt(req.params.page);
@@ -231,7 +231,7 @@ app.get('/search-client/content-search/:contentSearch/page/:page', async (req, r
                 page: 1,
                 total_page: '',
                 count_item: '',
-                data: null
+                data: []
         };
         const contentSearch = req.params.contentSearch;
         const page = parseInt(req.params.page);
