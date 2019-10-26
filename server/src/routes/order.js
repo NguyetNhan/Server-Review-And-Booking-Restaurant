@@ -3,6 +3,7 @@ const ModelOrder = require('../models/order');
 const ModelNotification = require('../models/notification');
 const ModelRestaurant = require('../models/restaurant');
 const ModelUser = require('../models/user');
+const ModelInvite = require('../models/invite');
 
 app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
         var format = {
@@ -214,7 +215,8 @@ app.post('/add-order', async (req, res) => {
                         discount: req.body.discount,
                         note: req.body.note,
                         status: 'waiting',
-                        createDate: Date.now()
+                        createDate: Date.now(),
+                        guests: req.body.guests
                 };
                 const results = await ModelOrder.create(data);
                 if (results === null) {
@@ -226,14 +228,37 @@ app.post('/add-order', async (req, res) => {
                         const user = await ModelUser.findById(results.idClient);
                         const notification = {
                                 idAccount: restaurant.idAdmin,
-                                idOrder: results._id,
+                                idDetail: results._id,
                                 title: user.name,
                                 content: 'đã đặt tiệc nhà hàng của bạn !',
-                                image: null,
+                                image: user.avatar,
                                 type: 'order',
                                 createDate: Date.now()
                         };
                         await ModelNotification.create(notification);
+                        const date = new Date(data.receptionTime);
+                        const convertTime = `${date.getHours()}h ${date.getMinutes()}''`;
+                        const convertDate = `${date.getDate()} / ${date.getMonth() + 1} / ${date.getFullYear()}`;
+                        for (item of data.guests) {
+                                await ModelInvite.create({
+                                        idAccountClient: item.idAccount,
+                                        idAccountInvite: results.idClient,
+                                        idRestaurant: restaurant._id,
+                                        receptionTime: data.receptionTime,
+                                        idOrder: results._id,
+                                        createDate: Date.now(),
+                                });
+                                const notification = {
+                                        idAccount: item.idAccount,
+                                        idDetail: restaurant._id,
+                                        title: user.name,
+                                        content: `đã mời bạn đến tham gia buổi tiệc tại ${restaurant.name} lúc ${convertTime} ngày ${convertDate}!`,
+                                        image: user.avatar,
+                                        type: 'restaurant',
+                                        createDate: Date.now()
+                                };
+                                await ModelNotification.create(notification);
+                        }
                         format.messages = 'Đặt tiệc thành công !';
                         format.data = results;
                 }
@@ -274,7 +299,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                         if (status === 'activity') {
                                                 const notification = {
                                                         idAccount: results.idClient,
-                                                        idOrder: results._id,
+                                                        idDetail: results._id,
                                                         title: restaurant.name,
                                                         content: `Đơn hàng ID ${idOrder} đã được xác nhận !`,
                                                         image: restaurant.imageRestaurant[0],
@@ -289,7 +314,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                                 if (idAccount === order.idClient) {
                                                         const notification = {
                                                                 idAccount: accountAdmin._id,
-                                                                idOrder: order._id,
+                                                                idDetail: order._id,
                                                                 title: order.customerName,
                                                                 content: `Đã hủy đơn hàng ID ${idOrder} !`,
                                                                 image: accountClient.avatar,
@@ -300,7 +325,7 @@ app.put('/confirm-order/idAccount/:idAccount/idOrder/:idOrder/status/:status', a
                                                 } else if (idAccount === restaurant.idAdmin) {
                                                         const notification = {
                                                                 idAccount: accountClient._id,
-                                                                idOrder: order._id,
+                                                                idDetail: order._id,
                                                                 title: restaurant.name,
                                                                 content: `Không chấp nhận đơn hàng ID ${idOrder} của bạn !`,
                                                                 image: restaurant.imageRestaurant[0],
@@ -360,7 +385,7 @@ app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', asy
                                                 }
                                                 const notification = {
                                                         idAccount: results.idClient,
-                                                        idOrder: results._id,
+                                                        idDetail: results._id,
                                                         title: restaurant.name,
                                                         content: `Đơn hàng ID ${idOrder} đã hoàn thành, bạn nhận được ${Number.parseInt(percent)} điểm cộng từ giá trị đơn hàng, hãy cho chúng tôi biết nhận xét của bạn để cải thiện chất lượng tốt hơn !`,
                                                         image: restaurant.imageRestaurant[0],
@@ -381,6 +406,5 @@ app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', asy
                 format.data = error;
                 res.status(500).json(format);
         }
-
 });
 

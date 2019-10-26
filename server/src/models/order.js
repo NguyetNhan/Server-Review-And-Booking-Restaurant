@@ -5,6 +5,10 @@ const DiscountSchema = new Schema({
         score: Number,
         type: String,
 });
+const GuestsSchema = new Schema({
+        name: String,
+        idAccount: String,
+});
 const OrderSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idClient: String,
@@ -25,6 +29,7 @@ const OrderSchema = new Schema({
         totalMoney: Number,
         discount: DiscountSchema,
         createDate: Date,
+        guests: [GuestsSchema]
 });
 
 module.exports = mongoose.model('orders', OrderSchema);

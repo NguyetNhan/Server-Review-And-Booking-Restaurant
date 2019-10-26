@@ -212,8 +212,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                 if (restaurant.type === 'restaurant') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
-                                                                idRestaurant: restaurant._id,
-                                                                idReview: results._id,
+                                                                idDetail: restaurant._id,
                                                                 title: client.name,
                                                                 content: `đã cập nhật lại nhận xét cho nhà hàng ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
@@ -223,8 +222,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                 } else if (restaurant.type === 'coffee') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
-                                                                idRestaurant: restaurant._id,
-                                                                idReview: results._id,
+                                                                idDetail: restaurant._id,
                                                                 title: client.name,
                                                                 content: `đã cập nhật lại nhận xét cho quán coffee ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
@@ -248,8 +246,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                         if (restaurant.type === 'restaurant') {
                                                                 await ModelNotification.create({
                                                                         idAccount: restaurant.idAdmin,
-                                                                        idRestaurant: restaurant._id,
-                                                                        idReview: results._id,
+                                                                        idDetail: restaurant._id,
                                                                         title: client.name,
                                                                         content: `đã cập nhật lại nhận xét cho món ${food.name} trong thực đơn nhà hàng ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
@@ -259,8 +256,7 @@ app.put('/update-review/idReview/:idReview/idReviewReceiver/:idReviewReceiver/id
                                                         } else if (restaurant.type === 'coffee') {
                                                                 await ModelNotification.create({
                                                                         idAccount: restaurant.idAdmin,
-                                                                        idReview: results._id,
-                                                                        idRestaurant: restaurant._id,
+                                                                        idDetail: restaurant._id,
                                                                         title: client.name,
                                                                         content: `đã cập nhật lại nhận xét cho món ${food.name} trong thực đơn quán coffee ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
@@ -329,8 +325,7 @@ app.post('/add-review', async (req, res) => {
                                                 if (restaurant.type === 'restaurant') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
-                                                                idReview: review._id,
-                                                                idRestaurant: restaurant._id,
+                                                                idDetail: restaurant._id,
                                                                 title: client.name,
                                                                 content: `đã đánh giá ${data.score} sao cho nhà hàng ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
@@ -340,8 +335,7 @@ app.post('/add-review', async (req, res) => {
                                                 } else if (restaurant.type === 'coffee') {
                                                         await ModelNotification.create({
                                                                 idAccount: restaurant.idAdmin,
-                                                                idRestaurant: restaurant._id,
-                                                                idReview: review._id,
+                                                                idDetail: restaurant._id,
                                                                 title: client.name,
                                                                 content: `đã đánh giá ${data.score} sao cho quán coffee ${restaurant.name} của bạn !`,
                                                                 image: client.avatar,
@@ -365,8 +359,7 @@ app.post('/add-review', async (req, res) => {
                                                         if (restaurant.type === 'restaurant') {
                                                                 await ModelNotification.create({
                                                                         idAccount: restaurant.idAdmin,
-                                                                        idRestaurant: restaurant._id,
-                                                                        idReview: review._id,
+                                                                        idDetail: restaurant._id,
                                                                         title: client.name,
                                                                         content: `đã đánh giá ${data.score} sao cho món ${food.name} trong thực đơn nhà hàng ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,
@@ -376,8 +369,7 @@ app.post('/add-review', async (req, res) => {
                                                         } else if (restaurant.type === 'coffee') {
                                                                 await ModelNotification.create({
                                                                         idAccount: restaurant.idAdmin,
-                                                                        idRestaurant: restaurant._id,
-                                                                        idReview: review._id,
+                                                                        idDetail: restaurant._id,
                                                                         title: client.name,
                                                                         content: `đã đánh giá ${data.score} sao cho món ${food.name} trong thực đơn quán coffee ${restaurant.name} của bạn !`,
                                                                         image: client.avatar,

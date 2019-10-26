@@ -4,9 +4,7 @@ var Schema = mongoose.Schema;
 var NotificationSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idAccount: String,
-        idRestaurant: String,
-        idOrder: String,
-        idReview: String,
+        idDetail: String,
         title: String,
         content: String,
         image: String,

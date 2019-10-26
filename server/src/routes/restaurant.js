@@ -404,7 +404,7 @@ app.post('/register-restaurant', async (req, res) => {
                                                 format.data = results;
                                                 const accountAdmin = await ModelUser.findOne({ authorities: 'admin' });
                                                 await ModelNotification.create({
-                                                        idRestaurant: results._id,
+                                                        idDetail: results._id,
                                                         idAccount: accountAdmin._id,
                                                         title: account.name,
                                                         content: `đã gửi thông tin đăng kí nhà hàng ${(data.name)} cho bạn !`,
@@ -444,7 +444,7 @@ app.put('/confirm-restaurant/:idRestaurant/:idAdmin', async (req, res) => {
                 await ModelUser.updateOne({ _id: req.params.idAdmin }, { authorities: 'admin-restaurant' });
                 const restaurant = await ModelRestaurant.findById(req.params.idRestaurant);
                 await ModelNotification.create({
-                        idRestaurant: req.params.idRestaurant,
+                        idDetail: req.params.idRestaurant,
                         idAccount: req.params.idAdmin,
                         title: restaurant.name,
                         content: 'đã được chấp nhận !',
@@ -472,7 +472,7 @@ app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {
                 const restaurant = await ModelRestaurant.findById(req.params.idRestaurant);
                 const result = await ModelRestaurant.deleteOne({ _id: req.params.idRestaurant });
                 await ModelNotification.create({
-                        idRestaurant: req.params.idRestaurant,
+                        idDetail: req.params.idRestaurant,
                         idAccount: restaurant.idAdmin,
                         title: restaurant.name,
                         content: 'không được chấp nhận !',

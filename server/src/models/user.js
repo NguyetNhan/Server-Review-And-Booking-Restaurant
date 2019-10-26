@@ -6,7 +6,7 @@ var UserSchema = new Schema({
         email: { type: String, lowercase: true, unique: true },
         password: String,
         avatar: String,
-        phone: Number,
+        phone: String,
         authorities: String,
         score: Number,
         conversation: [{
@@ -14,7 +14,8 @@ var UserSchema = new Schema({
                 idUserReceiver: String,
                 createDate: Date,
         }],
-        createDate: Date
+        createDate: Date,
+        guests: [String]
 });
 
 module.exports = mongoose.model('users', UserSchema);

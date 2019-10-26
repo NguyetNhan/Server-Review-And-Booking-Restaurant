@@ -4,7 +4,6 @@ const ModelReview = require('../models/review');
 const lodash = require('lodash');
 const multer = require('multer');
 const path = require('path');
-const { io } = require('../socket');
 
 
 const storage = multer.diskStorage({
