@@ -7,6 +7,15 @@ const LikeSchema = new Schema({
         createDate: Date,
 });
 
+const ReplySchema = new Schema({
+        id: mongoose.Types.ObjectId,
+        idAccount: String,
+        content: String,
+        like: [LikeSchema],
+        image: { type: String, default: null },
+        createDate: Date,
+});
+
 const CommentSchema = new Schema({
         id: mongoose.Types.ObjectId,
         idAccount: String,
@@ -14,7 +23,7 @@ const CommentSchema = new Schema({
         like: [LikeSchema],
         image: { type: String, default: null },
         createDate: Date,
-        reply: { type: String, default: null },
+        reply: [ReplySchema],
 });
 
 const PostSchema = new Schema({

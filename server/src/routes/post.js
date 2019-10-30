@@ -165,6 +165,30 @@ app.get('/check-has-liked/idPost/:idPost/idAccount/:idAccount', async (req, res)
         }
 });
 
+app.get('/get-post/idPost/:idPost', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idPost = req.params.idPost;
+        try {
+                const post = await ModelPost.findById(idPost);
+                if (post === null) {
+                        format.error = true;
+                        format.message = 'Bài viết không tồn tại !';
+                } else {
+                        format.data = post;
+                        format.message = 'ok';
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
+
 app.post('/create-post', async (req, res) => {
         await upload(req, res, async (err) => {
                 var format = {
@@ -321,6 +345,76 @@ app.put('/update-view-restaurant/idPost/:idPost/idAccountView/:idAccountView', a
                 res.status(500).json(format);
         }
 });
+
+app.put('/comment-post/idPost/:idPost/idAccount/:idAccount', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idPost = req.params.idPost;
+        const idAccount = req.params.idAccount;
+        const contentComment = req.body.content;
+        const idReply = req.body.idReply;
+        try {
+                const resultPost = await ModelPost.findById(idPost);
+                if (resultPost === null) {
+                        format.error = true;
+                        format.message = 'Bài viết này không tồn tại !';
+                } else {
+                        let commentList = resultPost.comment;
+                        if (idReply === null) {
+                                let comment = {
+                                        idAccount: idAccount,
+                                        content: contentComment,
+                                        createDate: Date.now(),
+                                };
+                                commentList.push(comment);
+                        } else {
+                                for (let i = 0; i < commentList.length; i++) {
+                                        const resultBufferIdComment = new Uint8Array(commentList[i]._id.id.buffer, commentList[i]._id.id.byteOffset, commentList[i]._id.id.length);
+                                        const convertStringBufferIdComment = resultBufferIdComment.toString();
+                                        const convertBufferIdReply = Buffer.from(idReply, 'hex');
+                                        const resultBufferIdReply = new Uint8Array(convertBufferIdReply.buffer, convertBufferIdReply.byteOffset, convertBufferIdReply.length);
+                                        const convertStringBufferIdReply = resultBufferIdReply.toString();
+                                        if (convertStringBufferIdComment === convertStringBufferIdReply) {
+                                                let listReply = commentList[i].reply;
+                                                listReply.push({
+                                                        idAccount: idAccount,
+                                                        content: contentComment,
+                                                        createDate: Date.now(),
+                                                });
+                                                commentList[i].reply = listReply;
+                                                break;
+                                        }
+                                }
+                        }
+                        if (idAccount !== resultPost.idAccount) {
+                                const resultUser = await ModelUser.findById(idAccount);
+                                const notification = {
+                                        idAccount: resultPost.idAccount,
+                                        idDetail: resultPost._id,
+                                        title: resultUser.name,
+                                        content: `đã bình luận về bài viết của bạn "${resultPost.content}"`,
+                                        image: resultUser.avatar,
+                                        type: 'post',
+                                        createDate: Date.now()
+                                };
+                                await ModelNotification.create(notification);
+                        }
+                        const updatePost = await ModelPost.updateOne({ _id: idPost }, { comment: commentList });
+                        if (updatePost.ok === 1)
+                                format.message = 'ok';
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
+
+
 
 
 function checkFileType (file, callback) {
