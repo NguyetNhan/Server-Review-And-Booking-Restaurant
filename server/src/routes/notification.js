@@ -74,7 +74,6 @@ app.get('/idAccount/:id/page/:page', async (req, res) => {
         } catch (error) {
                 format.error = true;
                 format.message = error.message;
-                format.data = error;
                 res.status(500).json(format);
         }
 });             

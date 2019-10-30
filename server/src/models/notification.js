@@ -9,6 +9,7 @@ var NotificationSchema = new Schema({
         content: String,
         image: String,
         type: String,
+        status: { type: Boolean, default: false },
         createDate: Date,
 });
 

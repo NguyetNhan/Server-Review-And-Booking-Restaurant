@@ -21,3 +21,4 @@ app.use('/conversation', require('./conversation'));
 app.use('/message', require('./message'));
 app.use('/friend', require('./friend'));
 app.use('/invite', require('./invite'));
+app.use('/post', require('./post'));

@@ -39,16 +39,23 @@ app.get('/content-search/:contentSearch', async (req, res) => {
 
                 };
                 filterUser = {
-                        $or: [
+                        $and: [
                                 {
-                                        name: { $regex: contentSearch, $options: 'i' },
-                                        // name: userRegex
+                                        $or: [
+                                                {
+                                                        name: { $regex: contentSearch, $options: 'i' },
+                                                        // name: userRegex
+                                                },
+                                                {
+                                                        email: { $regex: contentSearch, $options: 'i' }
+                                                },
+                                                {
+                                                        phone: { $regex: contentSearch, $options: 'i' }
+                                                }
+                                        ]
                                 },
                                 {
-                                        email: { $regex: contentSearch, $options: 'i' }
-                                },
-                                {
-                                        phone: { $regex: contentSearch, $options: 'i' }
+                                        authorities: 'client'
                                 }
                         ]
                 };
@@ -76,15 +83,23 @@ app.get('/content-search/:contentSearch', async (req, res) => {
 
                 };
                 filterUser = {
-                        $or: [
+                        $and: [
                                 {
-                                        name: { $regex: contentSearch, $options: 'i' },
-                                        // name: userRegex
+                                        $or: [
+                                                {
+                                                        name: { $regex: contentSearch, $options: 'i' },
+                                                        // name: userRegex
+                                                },
+                                                {
+                                                        email: { $regex: contentSearch, $options: 'i' }
+                                                },
+                                        ]
                                 },
                                 {
-                                        email: { $regex: contentSearch, $options: 'i' }
-                                },
+                                        authorities: 'client'
+                                }
                         ]
+
                 };
         }
 
@@ -238,30 +253,44 @@ app.get('/search-client/content-search/:contentSearch/page/:page', async (req, r
         var filterUser = {};
         if (Number.isInteger(contentSearch)) {
                 filterUser = {
-                        $or: [
+                        $and: [
                                 {
-                                        name: { $regex: contentSearch, $options: 'i' },
-                                        // name: userRegex
+                                        $or: [
+                                                {
+                                                        name: { $regex: contentSearch, $options: 'i' },
+                                                        // name: userRegex
+                                                },
+                                                {
+                                                        email: { $regex: contentSearch, $options: 'i' }
+                                                },
+                                                {
+                                                        phone: { $regex: contentSearch, $options: 'i' }
+                                                }
+                                        ]
                                 },
                                 {
-                                        email: { $regex: contentSearch, $options: 'i' }
-                                },
-                                {
-                                        phone: { $regex: contentSearch, $options: 'i' }
+                                        authorities: 'client'
                                 }
                         ]
                 };
         } else {
                 filterUser = {
-                        $or: [
+                        $and: [
                                 {
-                                        name: { $regex: contentSearch, $options: 'i' },
-                                        // name: userRegex
+                                        $or: [
+                                                {
+                                                        name: { $regex: contentSearch, $options: 'i' },
+                                                },
+                                                {
+                                                        email: { $regex: contentSearch, $options: 'i' }
+                                                },
+                                        ]
                                 },
                                 {
-                                        email: { $regex: contentSearch, $options: 'i' }
-                                },
+                                        authorities: 'client'
+                                }
                         ]
+
                 };
         }
         try {
