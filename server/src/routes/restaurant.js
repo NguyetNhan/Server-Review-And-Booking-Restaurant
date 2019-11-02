@@ -363,12 +363,10 @@ app.post('/register-restaurant', async (req, res) => {
                 if (err) {
                         format.error = true;
                         format.message = err.message;
-                        res.json(format);
                 } else {
                         if (req.files === undefined) {
                                 format.error = true;
                                 format.message = 'Không có hình được chọn !';
-                                res.json(format);
                         } else {
                                 const image = [];
                                 for (let item of req.files) {
@@ -383,7 +381,8 @@ app.post('/register-restaurant', async (req, res) => {
                                         imageRestaurant: image,
                                         status: 'waiting',
                                         type: req.body.type,
-                                        time_activity: req.body.time_activity,
+                                        timeOpen: req.body.timeOpen,
+                                        timeClose: req.body.timeClose,
                                         position: {
                                                 latitude: req.body.latitude,
                                                 longitude: req.body.longitude
@@ -396,7 +395,6 @@ app.post('/register-restaurant', async (req, res) => {
                                         if (resultRestaurant.length > 0) {
                                                 format.error = true;
                                                 format.message = 'Mỗi tài khoản chỉ đăng kí được 1 nhà hàng !';
-                                                res.json(format);
                                         } else {
                                                 const results = await ModelRestaurant.create(data);
                                                 format.error = false;
@@ -419,15 +417,14 @@ app.post('/register-restaurant', async (req, res) => {
                                                         const idSocketAdmin = idClientConnect[indexId].idSocket;
                                                         io.to(`${idSocketAdmin}`).emit('notification', ' đã gửi đăng kí thông tin nhà hàng !');
                                                 }
-                                                res.json(format);
                                         }
                                 } catch (error) {
                                         format.error = true;
                                         format.message = error.message;
-                                        res.status(500).json(format);
                                 }
                         }
                 }
+                res.json(format);
         });
 });
 

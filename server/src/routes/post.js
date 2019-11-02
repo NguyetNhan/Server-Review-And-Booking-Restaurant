@@ -5,6 +5,8 @@ const ModelOrder = require('../models/order');
 const ModelRestaurant = require('../models/restaurant');
 const ModelUser = require('../models/user');
 const ModelNotification = require('../models/notification');
+const ModelFriend = require('../models/friend');
+const ModelFollow = require('../models/follow');
 const multer = require('multer');
 const path = require('path');
 const storage = multer.diskStorage({
@@ -189,6 +191,69 @@ app.get('/get-post/idPost/:idPost', async (req, res) => {
         }
 });
 
+app.get('/home/post-list/page/:page', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                page: 1,
+                total_page: '',
+                count_item: '',
+                data: []
+        };
+        const page = parseInt(req.params.page);
+        try {
+                const countItem = await ModelPost.countDocuments();
+                format.count_item = countItem;
+                let total_page = countItem / 10;
+                if (countItem === 0) {
+                        format.message = 'Chưa có bài biết nào !';
+                        format.page = page;
+                        format.total_page = total_page;
+                        format.data = [];
+                } else {
+                        if (Number.isInteger(total_page)) {
+                                format.total_page = total_page;
+                        } else {
+                                total_page = parseInt(total_page);
+                                format.total_page = total_page + 1;
+                        }
+                        if (page > format.total_page || page === 0) {
+                                format.error = true;
+                                format.page = page;
+                                format.message = 'Nhập số trang sai !';
+                        } else {
+                                if (page === 1) {
+                                        format.page = page;
+                                        const results = await ModelPost.find().sort({ createDate: -1 }).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Chưa có bài biết nào !';
+                                                format.data = results;
+                                        }
+                                } else {
+                                        format.page = page;
+                                        const results = await ModelPost.find().sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Chưa có bài biết nào !';
+                                                format.data = results;
+                                        }
+                                }
+                        }
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
 app.post('/create-post', async (req, res) => {
         await upload(req, res, async (err) => {
                 var format = {
@@ -414,7 +479,129 @@ app.put('/comment-post/idPost/:idPost/idAccount/:idAccount', async (req, res) =>
         }
 });
 
+app.put('/like-comment/idPost/:idPost/idAccount/:idAccount/idComment/:idComment', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idPost = req.params.idPost;
+        const idAccount = req.params.idAccount;
+        const idComment = req.params.idComment;
+        const idCommentReply = req.body.idCommentReply;
+        try {
+                const post = await ModelPost.findById(idPost);
+                if (post === null) {
+                        format.error = true;
+                        format.message = 'Bài viết không tồn tại !';
+                } else {
+                        let commentList = post.comment;
+                        const like = {
+                                idAccount: idAccount,
+                                createDate: Date.now(),
+                        };
+                        if (idCommentReply === null) {
+                                for (let i = 0; i < commentList.length; i++) {
+                                        const resultBufferIdComment = new Uint8Array(commentList[i]._id.id.buffer, commentList[i]._id.id.byteOffset, commentList[i]._id.id.length);
+                                        const convertStringBufferIdComment = resultBufferIdComment.toString();
+                                        const convertBufferIdCommentRequest = Buffer.from(idComment, 'hex');
+                                        const resultBufferIdCommentRequest = new Uint8Array(convertBufferIdCommentRequest.buffer, convertBufferIdCommentRequest.byteOffset, convertBufferIdCommentRequest.length);
+                                        const convertStringBufferIdCommentRequest = resultBufferIdCommentRequest.toString();
+                                        if (convertStringBufferIdComment === convertStringBufferIdCommentRequest) {
+                                                let likeList = commentList[i].like;
+                                                let checkExist = false;
+                                                let position = null;
+                                                for (let j = 0; j < likeList.length; j++) {
+                                                        if (idAccount === likeList[j].idAccount) {
+                                                                checkExist = true;
+                                                                position = j;
+                                                                break;
+                                                        }
+                                                }
+                                                if (checkExist) {
+                                                        likeList.splice(position, 1);
+                                                } else {
+                                                        likeList.push(like);
+                                                        if (idAccount !== post.idAccount) {
+                                                                const resultUser = await ModelUser.findById(idAccount);
+                                                                const notification = {
+                                                                        idAccount: commentList[i].idAccount,
+                                                                        idDetail: post._id,
+                                                                        title: resultUser.name,
+                                                                        content: `đã thích bình luận của bạn "${commentList[i].content}"`,
+                                                                        image: resultUser.avatar,
+                                                                        type: 'post',
+                                                                        createDate: Date.now()
+                                                                };
+                                                                await ModelNotification.create(notification);
+                                                        }
+                                                }
+                                                commentList[i].like = likeList;
+                                                break;
+                                        }
+                                }
+                        } else {
+                                for (let i = 0; i < commentList.length; i++) {
+                                        const resultBufferIdComment = new Uint8Array(commentList[i]._id.id.buffer, commentList[i]._id.id.byteOffset, commentList[i]._id.id.length);
+                                        const convertStringBufferIdComment = resultBufferIdComment.toString();
+                                        const convertBufferIdCommentRequest = Buffer.from(idComment, 'hex');
+                                        const resultBufferIdCommentRequest = new Uint8Array(convertBufferIdCommentRequest.buffer, convertBufferIdCommentRequest.byteOffset, convertBufferIdCommentRequest.length);
+                                        const convertStringBufferIdCommentRequest = resultBufferIdCommentRequest.toString();
+                                        if (convertStringBufferIdComment === convertStringBufferIdCommentRequest) {
+                                                for (let j = 0; j < commentList[i].reply.length; j++) {
+                                                        const resultBufferIdCommentReply = new Uint8Array(commentList[i].reply[j]._id.id.buffer, commentList[i].reply[j]._id.id.byteOffset, commentList[i].reply[j]._id.id.length);
+                                                        const convertStringBufferIdCommentReply = resultBufferIdCommentReply.toString();
+                                                        const convertBufferIdCommentReplyRequest = Buffer.from(idCommentReply, 'hex');
+                                                        const resultBufferIdCommentReplyRequest = new Uint8Array(convertBufferIdCommentReplyRequest.buffer, convertBufferIdCommentReplyRequest.byteOffset, convertBufferIdCommentReplyRequest.length);
+                                                        const convertStringBufferIdCommentReplyRequest = resultBufferIdCommentReplyRequest.toString();
+                                                        if (convertStringBufferIdCommentReply === convertStringBufferIdCommentReplyRequest) {
+                                                                let likeList = commentList[i].reply[j].like;
+                                                                let checkExist = false;
+                                                                let position = null;
+                                                                for (let q = 0; q < likeList.length; j++) {
+                                                                        if (idAccount === likeList[q].idAccount) {
+                                                                                checkExist = true;
+                                                                                position = q;
+                                                                                break;
+                                                                        }
+                                                                }
+                                                                if (checkExist) {
+                                                                        likeList.splice(position, 1);
+                                                                } else {
+                                                                        likeList.push(like);
+                                                                        if (idAccount !== post.idAccount) {
+                                                                                const resultUser = await ModelUser.findById(idAccount);
+                                                                                const notification = {
+                                                                                        idAccount: commentList[i].reply[j].idAccount,
+                                                                                        idDetail: post._id,
+                                                                                        title: resultUser.name,
+                                                                                        content: `đã thích bình luận của bạn "${commentList[i].reply[j].content}"`,
+                                                                                        image: resultUser.avatar,
+                                                                                        type: 'post',
+                                                                                        createDate: Date.now()
+                                                                                };
+                                                                                await ModelNotification.create(notification);
+                                                                        }
+                                                                }
+                                                                commentList[i].reply[j].like = likeList;
+                                                                break;
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
 
+                        const updatePost = await ModelPost.updateOne({ _id: idPost }, { comment: commentList });
+                        if (updatePost.ok === 1)
+                                format.message = 'ok';
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
 
 
 function checkFileType (file, callback) {
