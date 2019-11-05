@@ -7,6 +7,7 @@ const ModelUser = require('../models/user');
 const ModelNotification = require('../models/notification');
 const ModelFriend = require('../models/friend');
 const ModelFollow = require('../models/follow');
+const ModelDiscount = require('../models/discount');
 const multer = require('multer');
 const path = require('path');
 const storage = multer.diskStorage({
@@ -254,6 +255,72 @@ app.get('/home/post-list/page/:page', async (req, res) => {
                 res.status(500).json(format);
         }
 });
+
+app.get('/restaurant/post-list/idAccountRestaurant/:idAccountRestaurant/page/:page', async (req, res) => {
+        var format = {
+                error: false,
+                message: '',
+                page: 1,
+                total_page: '',
+                count_item: '',
+                data: []
+        };
+        const page = parseInt(req.params.page);
+        const idAccountRestaurant = req.params.idAccountRestaurant;
+        try {
+                const countItem = await ModelPost.countDocuments({ idAccount: idAccountRestaurant, typePost: 'restaurant' });
+                format.count_item = countItem;
+                let total_page = countItem / 10;
+                if (countItem === 0) {
+                        format.message = 'Chưa có bài biết nào !';
+                        format.page = page;
+                        format.total_page = total_page;
+                        format.data = [];
+                } else {
+                        if (Number.isInteger(total_page)) {
+                                format.total_page = total_page;
+                        } else {
+                                total_page = parseInt(total_page);
+                                format.total_page = total_page + 1;
+                        }
+                        if (page > format.total_page || page === 0) {
+                                format.error = true;
+                                format.page = page;
+                                format.message = 'Nhập số trang sai !';
+                        } else {
+                                if (page === 1) {
+                                        format.page = page;
+                                        const results = await ModelPost.find({ idAccount: idAccountRestaurant, typePost: 'restaurant' }).sort({ createDate: -1 }).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Chưa có bài biết nào !';
+                                                format.data = results;
+                                        }
+                                } else {
+                                        format.page = page;
+                                        const results = await ModelPost.find({ idAccount: idAccountRestaurant, typePost: 'restaurant' }).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
+                                        if (results.length > 0) {
+                                                format.message = 'ok';
+                                                format.data = results;
+                                        } else {
+                                                format.error = false;
+                                                format.message = 'Chưa có bài biết nào !';
+                                                format.data = results;
+                                        }
+                                }
+                        }
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+})
+
 app.post('/create-post', async (req, res) => {
         await upload(req, res, async (err) => {
                 var format = {
@@ -265,39 +332,105 @@ app.post('/create-post', async (req, res) => {
                         format.error = true;
                         format.message = err.message;
                 } else {
-                        if (req.files === undefined) {
-                                const body = {
-                                        idAccount: req.body.idAccount,
-                                        idRestaurant: req.body.idRestaurant,
-                                        content: req.body.content,
-                                        image: null,
-                                        createDate: Date.now(),
-                                };
-                                try {
-                                        const result = await ModelPost.create(body);
-                                        if (result === null) {
-                                                format.error = true;
-                                                format.message = 'Không thể thêm bài viết !';
+                        let body = null;
+                        const discount = {
+                                name: req.body.nameDiscount,
+                                createDate: Date.now(),
+                                endDate: req.body.endDateDiscount,
+                                amount: req.body.amountDiscount,
+                                idRestaurant: req.body.idRestaurant,
+                                percent: req.body.percentDiscount,
+                        };
+                        const typePost = req.body.typePost;
+                        if (typePost === 'restaurant') {
+                                if (discount === null) {
+                                        if (req.files === undefined) {
+                                                body = {
+                                                        idAccount: req.body.idAccount,
+                                                        idRestaurant: req.body.idRestaurant,
+                                                        content: req.body.content,
+                                                        typePost: req.body.typePost,
+                                                        image: null,
+                                                        createDate: Date.now(),
+                                                };
                                         } else {
-                                                format.message = 'Tạo bài viết thành công !';
-                                                format.data = result;
+                                                const image = [];
+                                                for (let item of req.files) {
+                                                        image.push(`/uploads/${item.filename}`);
+                                                }
+                                                body = {
+                                                        idAccount: req.body.idAccount,
+                                                        idRestaurant: req.body.idRestaurant,
+                                                        content: req.body.content,
+                                                        image: image,
+                                                        typePost: req.body.typePost,
+                                                        createDate: Date.now(),
+                                                };
                                         }
-                                } catch (error) {
-                                        format.error = true;
-                                        format.message = error.message;
+                                } else {
+                                        try {
+                                                const resultDiscount = await ModelDiscount.create(discount);
+                                                if (resultDiscount !== null) {
+                                                        if (req.files === undefined) {
+                                                                body = {
+                                                                        idAccount: req.body.idAccount,
+                                                                        idRestaurant: req.body.idRestaurant,
+                                                                        content: req.body.content,
+                                                                        typePost: req.body.typePost,
+                                                                        image: null,
+                                                                        discount: resultDiscount._id,
+                                                                        createDate: Date.now(),
+                                                                };
+                                                        } else {
+                                                                const image = [];
+                                                                for (let item of req.files) {
+                                                                        image.push(`/uploads/${item.filename}`);
+                                                                }
+                                                                body = {
+                                                                        idAccount: req.body.idAccount,
+                                                                        idRestaurant: req.body.idRestaurant,
+                                                                        content: req.body.content,
+                                                                        image: image,
+                                                                        typePost: req.body.typePost,
+                                                                        discount: resultDiscount._id,
+                                                                        createDate: Date.now(),
+                                                                };
+                                                        }
+                                                } else {
+                                                        format.error = true;
+                                                        format.message = 'Thêm khuyến mãi không thành công !';
+                                                }
+                                        } catch (error) {
+                                                format.error = true;
+                                                format.message = error.message;
+                                        }
                                 }
                         } else {
-                                const image = [];
-                                for (let item of req.files) {
-                                        image.push(`/uploads/${item.filename}`);
+                                if (req.files === undefined) {
+                                        body = {
+                                                idAccount: req.body.idAccount,
+                                                idRestaurant: req.body.idRestaurant,
+                                                content: req.body.content,
+                                                typePost: req.body.typePost,
+                                                image: null,
+                                                createDate: Date.now(),
+                                        };
+                                } else {
+                                        const image = [];
+                                        for (let item of req.files) {
+                                                image.push(`/uploads/${item.filename}`);
+                                        }
+                                        body = {
+                                                idAccount: req.body.idAccount,
+                                                idRestaurant: req.body.idRestaurant,
+                                                content: req.body.content,
+                                                image: image,
+                                                typePost: req.body.typePost,
+                                                createDate: Date.now(),
+                                        };
                                 }
-                                const body = {
-                                        idAccount: req.body.idAccount,
-                                        idRestaurant: req.body.idRestaurant,
-                                        content: req.body.content,
-                                        image: image,
-                                        createDate: Date.now(),
-                                };
+                        }
+                        if (body !== null) {
                                 try {
                                         const result = await ModelPost.create(body);
                                         if (result === null) {

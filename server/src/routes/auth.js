@@ -3,7 +3,7 @@ var Model = require('../models/user');
 var lodash = require('lodash');
 
 app.get('/id/:id', async (req, res) => {
-        var format = {
+        let format = {
                 error: false,
                 message: '',
                 data: null
@@ -22,7 +22,6 @@ app.get('/id/:id', async (req, res) => {
         } catch (error) {
                 format.error = true;
                 format.message = error.message;
-                format.data = error;
                 res.status(500).json(format);
         }
 });

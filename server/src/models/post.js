@@ -36,6 +36,7 @@ const PostSchema = new Schema({
         image: [String],
         createDate: Date,
         typePost: { type: String, default: 'client' },
+        discount: { type: String, default: null },
         viewRestaurant: { type: Number, default: 0 }
 });
 

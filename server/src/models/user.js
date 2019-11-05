@@ -15,7 +15,8 @@ var UserSchema = new Schema({
                 createDate: Date,
         }],
         createDate: Date,
-        guests: [String]
+        guests: [String],
+        discount: [String]
 });
 
 module.exports = mongoose.model('users', UserSchema);

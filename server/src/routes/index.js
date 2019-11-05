@@ -22,3 +22,4 @@ app.use('/message', require('./message'));
 app.use('/friend', require('./friend'));
 app.use('/invite', require('./invite'));
 app.use('/post', require('./post'));
+app.use('/discount', require('./discount'));

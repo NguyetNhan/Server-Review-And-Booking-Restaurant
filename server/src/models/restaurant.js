@@ -11,7 +11,8 @@ var RestaurantSchema = new Schema({
         address: String,
         status: String,
         type: String,
-        time_activity: String,
+        timeOpen: Number,
+        timeClose: Number,
         createDate: Date,
         star: { type: Number, default: 0 },
         position: {
