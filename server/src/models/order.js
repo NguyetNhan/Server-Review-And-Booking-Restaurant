@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const DiscountSchema = new Schema({
         name: String,
-        score: Number,
+        value: Number,
         type: String,
+        idDiscount: { type: String, default: null }
 });
 const GuestsSchema = new Schema({
         name: String,

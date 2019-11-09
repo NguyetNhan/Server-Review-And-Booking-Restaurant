@@ -226,6 +226,24 @@ app.post('/add-order', async (req, res) => {
                 } else {
                         const restaurant = await ModelRestaurant.findById(results.idRestaurant);
                         const user = await ModelUser.findById(results.idClient);
+                        if (data.discount !== null) {
+                                if (data.discount.type === 'score') {
+                                        const score = user.score - data.discount.value;
+                                        await ModelUser.updateOne({ _id: results.idClient }, { $set: { score: score } });
+                                } else {
+                                        const idDiscount = data.discount.idDiscount;
+                                        let discountUser = user.discount;
+                                        let position = null;
+                                        for (let i = 0; i < discountUser.length; i++) {
+                                                if (discountUser[i] === idDiscount)
+                                                        position = i;
+                                        }
+                                        if (position !== null) {
+                                                discountUser.splice(position, 1);
+                                        }
+                                        await ModelUser.updateOne({ _id: results.idClient }, { $set: { discount: discountUser } });
+                                }
+                        }
                         const notification = {
                                 idAccount: restaurant.idAdmin,
                                 idDetail: results._id,
@@ -407,4 +425,5 @@ app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', asy
                 res.status(500).json(format);
         }
 });
+
 

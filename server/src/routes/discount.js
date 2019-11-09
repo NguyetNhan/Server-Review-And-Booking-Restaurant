@@ -1,6 +1,7 @@
 const app = module.exports = require('express')();
 const ModelDiscount = require('../models/discount');
 const ModelRestaurant = require('../models/restaurant');
+const ModelUser = require('../models/user');
 const lodash = require('lodash');
 
 
@@ -95,9 +96,29 @@ app.put('/add-discount-client/idDiscount/:idDiscount/idAccount/:idAccount', asyn
                                                         format.message = 'Tài khoản quản trị nhà hàng không được phép tham gia chương trình khuyến mãi !';
                                                 } else {
                                                         idClientList.push(idAccount);
-                                                        const resultUpdate = await ModelDiscount.updateOne({ _id: idDiscount }, { idClient: idClientList });
-                                                        if (resultUpdate.ok === 1) {
-                                                                format.message = `Bạn đã nhận được mã khuyến mãi của nhà hàng ${restaurant.name} !`;
+                                                        const user = await ModelUser.findById(idAccount);
+                                                        if (user === null) {
+                                                                format.error = true;
+                                                                format.message = 'Tài khoản không tồn tại !';
+                                                        } else {
+                                                                const userDiscount = user.discount;
+                                                                let checkUserDiscountExist = false;
+                                                                for (item of userDiscount) {
+                                                                        if (item === idDiscount) {
+                                                                                checkUserDiscountExist = true;
+                                                                                break;
+                                                                        }
+                                                                }
+                                                                if (checkUserDiscountExist) {
+                                                                        format.message = 'Bạn đã nhận mã khuyến mãi rồi !';
+                                                                } else {
+                                                                        userDiscount.push(idDiscount);
+                                                                        const resultUpdateUser = await ModelUser.updateOne({ _id: idAccount }, { discount: userDiscount });
+                                                                        const resultUpdateDiscount = await ModelDiscount.updateOne({ _id: idDiscount }, { idClient: idClientList });
+                                                                        if (resultUpdateDiscount.ok === 1) {
+                                                                                format.message = `Bạn đã nhận được mã khuyến mãi của nhà hàng ${restaurant.name} !`;
+                                                                        }
+                                                                }
                                                         }
                                                 }
                                         }

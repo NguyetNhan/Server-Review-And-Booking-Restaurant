@@ -319,7 +319,7 @@ app.get('/restaurant/post-list/idAccountRestaurant/:idAccountRestaurant/page/:pa
                 format.message = error.message;
                 res.status(500).json(format);
         }
-})
+});
 
 app.post('/create-post', async (req, res) => {
         await upload(req, res, async (err) => {
@@ -333,14 +333,17 @@ app.post('/create-post', async (req, res) => {
                         format.message = err.message;
                 } else {
                         let body = null;
-                        const discount = {
-                                name: req.body.nameDiscount,
-                                createDate: Date.now(),
-                                endDate: req.body.endDateDiscount,
-                                amount: req.body.amountDiscount,
-                                idRestaurant: req.body.idRestaurant,
-                                percent: req.body.percentDiscount,
-                        };
+                        let discount = null;
+                        if (req.body.percentDiscount !== undefined) {
+                                discount = {
+                                        name: req.body.nameDiscount,
+                                        createDate: Date.now(),
+                                        endDate: req.body.endDateDiscount,
+                                        amount: req.body.amountDiscount,
+                                        idRestaurant: req.body.idRestaurant,
+                                        percent: req.body.percentDiscount,
+                                };
+                        }
                         const typePost = req.body.typePost;
                         if (typePost === 'restaurant') {
                                 if (discount === null) {
@@ -369,6 +372,7 @@ app.post('/create-post', async (req, res) => {
                                         }
                                 } else {
                                         try {
+
                                                 const resultDiscount = await ModelDiscount.create(discount);
                                                 if (resultDiscount !== null) {
                                                         if (req.files === undefined) {
@@ -400,6 +404,7 @@ app.post('/create-post', async (req, res) => {
                                                         format.error = true;
                                                         format.message = 'Thêm khuyến mãi không thành công !';
                                                 }
+
                                         } catch (error) {
                                                 format.error = true;
                                                 format.message = error.message;
@@ -727,6 +732,27 @@ app.put('/like-comment/idPost/:idPost/idAccount/:idAccount/idComment/:idComment'
                         const updatePost = await ModelPost.updateOne({ _id: idPost }, { comment: commentList });
                         if (updatePost.ok === 1)
                                 format.message = 'ok';
+                }
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
+
+
+app.delete('/idPost/:idPost', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idPost = req.params.idPost;
+        try {
+                const resultDelete = await ModelPost.deleteOne({ _id: idPost });
+                if (resultDelete.ok === 1) {
+                        format.message = 'Xóa thành công bài viết !';
                 }
                 res.json(format);
         } catch (error) {

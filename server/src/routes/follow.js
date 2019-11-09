@@ -66,3 +66,22 @@ app.post('/change-follow', async (req, res) => {
                 res.status(500).json(format);
         }
 });
+
+app.get('/follow-list/idAccount/:idAccount', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: []
+        };
+        const idAccount = req.params.idAccount;
+        try {
+                const result = await ModelFollow.find({ idAccountFollow: idAccount });
+                format.data = result;
+                format.message = 'ok';
+                res.json(format);
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+                res.status(500).json(format);
+        }
+});
