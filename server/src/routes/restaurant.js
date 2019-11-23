@@ -458,6 +458,72 @@ app.put('/confirm-restaurant/:idRestaurant/:idAdmin', async (req, res) => {
         }
 });
 
+app.put('/update-restaurant/idRestaurant/:idRestaurant', async (req, res) => {
+        const idRestaurant = req.params.idRestaurant;
+        await upload(req, res, async (err) => {
+                var format = {
+                        error: false,
+                        message: '',
+                        data: null
+                };
+                if (err) {
+                        format.error = true;
+                        format.message = err.message;
+                } else {
+                        let body = {};
+                        if (req.files === undefined) {
+                                body = {
+                                        name: req.body.name,
+                                        idAdmin: req.body.idAdmin,
+                                        phone: req.body.phone,
+                                        introduce: req.body.introduce,
+                                        address: req.body.address,
+                                        imageRestaurant: req.body.imageRestaurant,
+                                        status: 'ok',
+                                        type: req.body.type,
+                                        timeOpen: req.body.timeOpen,
+                                        timeClose: req.body.timeClose,
+                                        position: {
+                                                latitude: req.body.latitude,
+                                                longitude: req.body.longitude,
+                                        },
+                                        createDate: req.body.createDate
+                                };
+                        } else {
+                                const image = [];
+                                for (let item of req.files) {
+                                        image.push(`/uploads/${item.filename}`);
+                                }
+                                body = {
+                                        name: req.body.name,
+                                        idAdmin: req.body.idAdmin,
+                                        phone: req.body.phone,
+                                        introduce: req.body.introduce,
+                                        address: req.body.address,
+                                        imageRestaurant: image,
+                                        status: 'ok',
+                                        type: req.body.type,
+                                        timeOpen: req.body.timeOpen,
+                                        timeClose: req.body.timeClose,
+                                        position: {
+                                                latitude: req.body.latitude,
+                                                longitude: req.body.longitude,
+                                        },
+                                        createDate: req.body.createDate
+                                };
+                        }
+                        const resultUpdate = await ModelRestaurant.updateOne({ _id: idRestaurant }, body);
+                        if (resultUpdate.ok === 1) {
+                                format.message = 'Cập nhật thành công !';
+                        } else {
+                                format.error = true;
+                                format.message = 'Cập nhật thất bại !';
+                        }
+                }
+                res.json(format);
+        });
+});
+
 app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {
         var format = {
                 error: false,

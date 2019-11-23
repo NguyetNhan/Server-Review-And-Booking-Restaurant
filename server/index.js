@@ -60,11 +60,28 @@ app.use(function (err, req, res, next) {
 
 io.on('connection', function (socket) {
         socket.on('infoAccount', (info) => {
-                idClientConnect.push({
-                        idSocket: socket.id,
-                        idAccount: info.idAccount,
-                        location: info.geolocation
-                });
+                let checkExist = false;
+                let position = null;
+                for (let i = 0; i < idClientConnect.length; i++) {
+                        if (idClientConnect[i].idAccount === info.idAccount) {
+                                checkExist = true;
+                                position = i;
+                                break;
+                        }
+                }
+                if (checkExist) {
+                        idClientConnect[position] = {
+                                idSocket: socket.id,
+                                idAccount: info.idAccount,
+                                location: info.geolocation
+                        };
+                } else {
+                        idClientConnect.push({
+                                idSocket: socket.id,
+                                idAccount: info.idAccount,
+                                location: info.geolocation
+                        });
+                }
                 console.log('id connect server: ', socket.id, info);
         });
         socket.on('idClientOnline', (fn) => {
