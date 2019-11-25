@@ -550,7 +550,6 @@ app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {
         }
 });
 
-
 function checkFileType (file, callback) {
         // Allowed ext
         const filetypes = /jpeg|jpg|png/;

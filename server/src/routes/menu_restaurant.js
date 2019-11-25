@@ -109,7 +109,7 @@ app.get('/list-food-the-best/page/:page', async (req, res) => {
                 format.message = error.message;
                 res.status(500).json(format);
         }
-})
+});
 
 app.get('/idRestaurant/:id/page/:page', async (req, res) => {
         var format = {
@@ -218,6 +218,51 @@ app.post('/add-menu', async (req, res) => {
         });
 });
 
+app.put('/update/idFood/:idFood', async (req, res) => {
+        const idFood = req.params.idFood;
+        await upload(req, res, async (err) => {
+                var format = {
+                        error: false,
+                        message: '',
+                        data: null
+                };
+                if (err) {
+                        format.error = true;
+                        format.message = err.message;
+                } else {
+                        let body = {};
+                        if (req.file === undefined) {
+                                body = {
+                                        name: req.body.name,
+                                        introduce: req.body.introduce,
+                                        price: req.body.price,
+                                };
+                        } else {
+                                let image = `/uploads/${req.file.filename}`;
+                                body = {
+                                        name: req.body.name,
+                                        introduce: req.body.introduce,
+                                        image: image,
+                                        price: req.body.price,
+                                };
+                        }
+                        try {
+                                const resultUpdate = await ModelMenu.updateOne({ _id: idFood }, body);
+                                if (resultUpdate.ok === 1) {
+                                        format.message = 'Cập nhật thành công !';
+                                } else {
+                                        format.error = true;
+                                        format.message = 'Cập nhật thất bại !';
+                                }
+                        } catch (error) {
+                                format.error = true;
+                                format.message = 'Cập nhật món ăn thất bại !';
+                        }
+
+                }
+                res.json(format);
+        });
+});
 
 function checkFileType (file, callback) {
         // Allowed ext
