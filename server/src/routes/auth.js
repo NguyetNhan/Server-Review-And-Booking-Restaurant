@@ -1,7 +1,25 @@
 var app = module.exports = require('express')();
 var Model = require('../models/user');
 var lodash = require('lodash');
+const multer = require('multer');
+const path = require('path');
 
+
+const storage = multer.diskStorage({
+        destination: function (req, file, callback) {
+                callback(null, './public/uploads');
+        },
+        filename: function (req, file, callback) {
+                callback(null, `${file.fieldname}_${Date.now()}_${file.originalname}`);
+        }
+});
+
+const upload = multer({
+        storage: storage,
+        fileFilter: function (req, file, cb) {
+                checkFileType(file, cb);
+        }
+}).single('avatar');
 app.get('/id/:id', async (req, res) => {
         let format = {
                 error: false,
@@ -52,7 +70,7 @@ app.post('/signup', async (req, res) => {
                                 password: req.body.password,
                                 avatar: null,
                                 score: 0,
-                                phone: parseInt(req.body.phone),
+                                phone: req.body.phone,
                                 authorities: 'client',
                                 conversation: [],
                                 createDate: Date.now()
@@ -122,3 +140,71 @@ app.post('/login', async (req, res) => {
         }
 
 });
+
+app.put('/update-account/idAccount/:idAccount', async (req, res) => {
+        const idAccount = req.params.idAccount;
+        await upload(req, res, async (err) => {
+                let format = {
+                        error: false,
+                        message: '',
+                        data: null
+                };
+                if (err) {
+                        format.error = true;
+                        format.message = err.message;
+                        res.json(format);
+                } else {
+                        // upload image bằng array thì dùng files 
+                        // nếu single thì dùng file
+                        let body = {};
+                        if (req.file === undefined) {
+                                body = {
+                                        name: req.body.name,
+                                        phone: req.body.phone,
+                                        password: req.body.password
+                                };
+                        } else {
+                                let image = `/uploads/${req.file.filename}`;
+                                body = {
+                                        name: req.body.name,
+                                        phone: req.body.phone,
+                                        password: req.body.password,
+                                        avatar: image
+                                };
+                        }
+                        try {
+                                const resultUpdate = await Model.updateOne({ _id: idAccount }, body);
+                                if (resultUpdate.ok === 1) {
+                                        const acc = await Model.findById(idAccount);
+                                        if (acc !== null) {
+                                                format.data = acc;
+                                        }
+                                        format.message = 'Cập nhật thành công !';
+                                } else {
+                                        format.error = true;
+                                        format.message = 'Cập nhật thất bại !';
+                                }
+                        } catch (error) {
+                                format.error = true;
+                                format.message = 'Cập nhật thất bại ! ' + error.message;
+                        }
+                }
+                res.json(format);
+        });
+
+});
+
+function checkFileType (file, callback) {
+        // Allowed ext
+        const filetypes = /jpeg|jpg|png/;
+        // Check ext
+        const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+        // Check mime
+        const mimetype = filetypes.test(file.mimetype);
+
+        if (mimetype && extname) {
+                return callback(null, true);
+        } else {
+                callback('Error: Images Only!');
+        }
+}

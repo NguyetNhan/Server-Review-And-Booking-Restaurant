@@ -264,6 +264,28 @@ app.put('/update/idFood/:idFood', async (req, res) => {
         });
 });
 
+app.delete('/delete/idFood/:idFood', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idFood = req.params.idFood;
+        try {
+                const resultDelete = await ModelMenu.deleteOne({ _id: idFood });
+                if (resultDelete.ok === 1) {
+                        format.message = 'Xóa món ăn thành công !';
+                } else {
+                        format.error = true;
+                        format.message = 'Xóa thất bại !';
+                }
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+        }
+        res.json(format);
+});
+
 function checkFileType (file, callback) {
         // Allowed ext
         const filetypes = /jpeg|jpg|png/;
