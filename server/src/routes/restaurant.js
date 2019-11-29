@@ -478,7 +478,6 @@ app.put('/update-restaurant/idRestaurant/:idRestaurant', async (req, res) => {
                                         phone: req.body.phone,
                                         introduce: req.body.introduce,
                                         address: req.body.address,
-                                        imageRestaurant: req.body.imageRestaurant,
                                         status: 'ok',
                                         type: req.body.type,
                                         timeOpen: req.body.timeOpen,
@@ -491,26 +490,45 @@ app.put('/update-restaurant/idRestaurant/:idRestaurant', async (req, res) => {
                                 };
                         } else {
                                 const image = [];
-                                for (let item of req.files) {
-                                        image.push(`/uploads/${item.filename}`);
+                                if (req.files.length > 0) {
+                                        for (let item of req.files) {
+                                                image.push(`/uploads/${item.filename}`);
+                                        }
+                                        body = {
+                                                name: req.body.name,
+                                                idAdmin: req.body.idAdmin,
+                                                phone: req.body.phone,
+                                                introduce: req.body.introduce,
+                                                address: req.body.address,
+                                                imageRestaurant: image,
+                                                status: 'ok',
+                                                type: req.body.type,
+                                                timeOpen: req.body.timeOpen,
+                                                timeClose: req.body.timeClose,
+                                                position: {
+                                                        latitude: req.body.latitude,
+                                                        longitude: req.body.longitude,
+                                                },
+                                                createDate: req.body.createDate
+                                        };
+                                } else {
+                                        body = {
+                                                name: req.body.name,
+                                                idAdmin: req.body.idAdmin,
+                                                phone: req.body.phone,
+                                                introduce: req.body.introduce,
+                                                address: req.body.address,
+                                                status: 'ok',
+                                                type: req.body.type,
+                                                timeOpen: req.body.timeOpen,
+                                                timeClose: req.body.timeClose,
+                                                position: {
+                                                        latitude: req.body.latitude,
+                                                        longitude: req.body.longitude,
+                                                },
+                                                createDate: req.body.createDate
+                                        };
                                 }
-                                body = {
-                                        name: req.body.name,
-                                        idAdmin: req.body.idAdmin,
-                                        phone: req.body.phone,
-                                        introduce: req.body.introduce,
-                                        address: req.body.address,
-                                        imageRestaurant: image,
-                                        status: 'ok',
-                                        type: req.body.type,
-                                        timeOpen: req.body.timeOpen,
-                                        timeClose: req.body.timeClose,
-                                        position: {
-                                                latitude: req.body.latitude,
-                                                longitude: req.body.longitude,
-                                        },
-                                        createDate: req.body.createDate
-                                };
                         }
                         const resultUpdate = await ModelRestaurant.updateOne({ _id: idRestaurant }, body);
                         if (resultUpdate.ok === 1) {

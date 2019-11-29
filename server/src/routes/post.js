@@ -741,6 +741,57 @@ app.put('/like-comment/idPost/:idPost/idAccount/:idAccount/idComment/:idComment'
         }
 });
 
+app.put('/update-post/idPost/:idPost', async (req, res) => {
+        const idPost = req.params.idPost;
+        await upload(req, res, async (err) => {
+                let format = {
+                        error: false,
+                        message: '',
+                        data: null
+                };
+                if (err) {
+                        format.error = true;
+                        format.message = err.message;
+                } else {
+                        let body = {};
+                        if (req.files === undefined) {
+                                body = {
+                                        content: req.body.content,
+                                };
+                        } else {
+                                const image = [];
+                                if (req.files.length > 0) {
+                                        for (let item of req.files) {
+                                                image.push(`/uploads/${item.filename}`);
+                                        }
+                                        body = {
+                                                content: req.body.content,
+                                                image: image
+                                        };
+                                } else {
+                                        body = {
+                                                content: req.body.content,
+                                        };
+                                }
+                        }
+                        try {
+                                const resultUpdate = await ModelPost.updateOne({ _id: idPost }, body);
+                                if (resultUpdate.ok === 1) {
+                                        format.message = 'Cập nhật thành công !';
+                                } else {
+                                        format.error = true;
+                                        format.message = 'Cập nhật thất bại !';
+                                }
+                        } catch (error) {
+                                format.error = true;
+                                format.message = 'Cập nhật thất bại ! ' + error.message;
+                        }
+
+                }
+                res.json(format);
+        });
+});
+
 
 app.delete('/idPost/:idPost', async (req, res) => {
         let format = {
