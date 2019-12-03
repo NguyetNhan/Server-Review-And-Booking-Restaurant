@@ -295,7 +295,7 @@ app.get('/get-position-stranger/idAccount/:idAccount/latitude/:latitude/longitud
                         });
                         let list = [];
                         for (item of resultList) {
-                                if (item.distance < 1500) {
+                                if (item.distance < 10000) {
                                         list.push(item);
                                 }
                         }

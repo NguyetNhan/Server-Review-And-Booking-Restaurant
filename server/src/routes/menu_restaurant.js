@@ -23,7 +23,7 @@ const upload = multer({
 }).single('menu');
 
 app.get('/id/:id', async (req, res) => {
-        var format = {
+        let format = {
                 error: false,
                 message: '',
                 data: null

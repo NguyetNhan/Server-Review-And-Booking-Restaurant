@@ -67,7 +67,7 @@ app.get('/check-is-friend/idAccountClient/:idAccountClient/idAccountFriend/:idAc
 });
 
 app.post('/send-friend-request', async (req, res) => {
-        var format = {
+        let format = {
                 error: false,
                 message: '',
                 data: null
@@ -207,4 +207,28 @@ app.post('/contacts', async (req, res) => {
                 format.message = error.message;
                 res.json(format);
         }
+});
+
+app.delete('/delete/idAccountUser/:idAccountUser/idAccountFriend/:idAccountFriend', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idAccountUser = req.params.idAccountUser;
+        const idAccountFriend = req.params.idAccountFriend;
+        try {
+                const resultRemove1 = await ModelFriend.deleteOne({ idAccountClient: idAccountUser, idAccountFriend: idAccountFriend });
+                const resultRemove2 = await ModelFriend.deleteOne({ idAccountClient: idAccountFriend, idAccountFriend: idAccountUser });
+                if (resultRemove1.ok === 1 && resultRemove2.ok === 1) {
+                        format.message = 'Hủy kết bạn thành công !';
+                } else {
+                        format.error = true;
+                        format.message = 'Hủy kết bạn thất bại !';
+                }
+        } catch (error) {
+                format.error = true;
+                format.message = 'Hủy kết bạn thất bại ! ' + error.message;
+        }
+        res.json(format);
 });
