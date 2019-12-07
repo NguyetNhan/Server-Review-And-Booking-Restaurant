@@ -10,6 +10,7 @@ var MenuRestaurantSchema = new Schema({
         price: Number,
         star: { type: Number, default: 0 },
         createDate: Date,
+        status: { type: String, default: 'open' }
 });
 
 module.exports = mongoose.model('menuRestaurants', MenuRestaurantSchema);

@@ -22,6 +22,24 @@ app.get('/get-friend/idAccount/:idAccount', async (req, res) => {
         }
 });
 
+app.get('/get-total-friend/idAccount/:idAccount', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                totalFriend: null
+        };
+        const idAccount = req.params.idAccount;
+        try {
+                const result = await ModelFriend.countDocuments({ idAccountClient: idAccount, status: 'friend' });
+                format.totalFriend = result;
+                format.message = 'Thành công !';
+        } catch (error) {
+                format.error = true;
+                format.message = error.message;
+        }
+        res.json(format);
+});
+
 app.get('/get-friend-request/idAccount/:idAccount', async (req, res) => {
         var format = {
                 error: false,

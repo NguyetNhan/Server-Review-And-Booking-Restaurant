@@ -2,6 +2,7 @@ const app = module.exports = require('express')();
 const ModelRestaurant = require('../models/restaurant');
 const ModelUser = require('../models/user');
 const ModelNotification = require('../models/notification');
+const ModelMenu = require('../models/menu_restaurant');
 const ModelReview = require('../models/review');
 const lodash = require('lodash/array');
 const multer = require('multer');
@@ -540,6 +541,29 @@ app.put('/update-restaurant/idRestaurant/:idRestaurant', async (req, res) => {
                 }
                 res.json(format);
         });
+});
+
+app.put('/remove-restaurant/idRestaurant/:idRestaurant', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idRestaurant = req.params.idRestaurant;
+        try {
+                const resultUpdateRestaurant = await ModelRestaurant.updateOne({ _id: idRestaurant }, { status: 'close' });
+                await ModelMenu.updateMany({ idRestaurant: idRestaurant }, { status: 'close' });
+                if (resultUpdateRestaurant.ok === 1) {
+                        format.message = 'Đóng cửa thành công !';
+                } else {
+                        format.error = true;
+                        format.message = 'Đóng cửa thất bại !';
+                }
+        } catch (error) {
+                format.error = true;
+                format.message = 'Xóa thất bại ! ' + error.message;
+        }
+        res.json(format);
 });
 
 app.delete('/confirm-restaurant/:idRestaurant', async (req, res) => {

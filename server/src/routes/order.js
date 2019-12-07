@@ -201,23 +201,70 @@ app.post('/add-order', async (req, res) => {
                 data: null
         };
         try {
-                const data = {
-                        idClient: req.body.idClient,
-                        idRestaurant: req.body.idRestaurant,
-                        customerName: req.body.customerName,
-                        customerEmail: req.body.customerEmail,
-                        customerPhone: Number.parseInt(req.body.customerPhone),
-                        amountPerson: Number.parseInt(req.body.amountPerson),
-                        food: req.body.food,
-                        receptionTime: req.body.receptionTime,
-                        totalMoney: Number.parseFloat(req.body.totalMoney),
-                        totalMoneyFood: Number.parseFloat(req.body.totalMoneyFood),
-                        discount: req.body.discount,
-                        note: req.body.note,
-                        status: 'waiting',
-                        createDate: Date.now(),
-                        guests: req.body.guests
-                };
+                let data = {};
+                if (req.body.discount !== null) {
+                        console.log('req.body.discount: ', req.body.discount);
+                        if (req.body.discount.type === 'score') {
+                                data = {
+                                        idClient: req.body.idClient,
+                                        idRestaurant: req.body.idRestaurant,
+                                        customerName: req.body.customerName,
+                                        customerEmail: req.body.customerEmail,
+                                        customerPhone: req.body.customerPhone,
+                                        amountPerson: Number.parseInt(req.body.amountPerson),
+                                        food: req.body.food,
+                                        receptionTime: req.body.receptionTime,
+                                        totalMoney: Number.parseFloat(req.body.totalMoney),
+                                        totalMoneyFood: Number.parseFloat(req.body.totalMoneyFood),
+                                        discount: {
+                                                name: 'Sử dụng ' + req.body.discount.value + ' điểm tích lũy',
+                                                value: req.body.discount.value,
+                                                type: 'score',
+                                        },
+                                        note: req.body.note,
+                                        status: 'waiting',
+                                        createDate: Date.now(),
+                                        guests: req.body.guests
+                                };
+                        } else {
+                                data = {
+                                        idClient: req.body.idClient,
+                                        idRestaurant: req.body.idRestaurant,
+                                        customerName: req.body.customerName,
+                                        customerEmail: req.body.customerEmail,
+                                        customerPhone: req.body.customerPhone,
+                                        amountPerson: Number.parseInt(req.body.amountPerson),
+                                        food: req.body.food,
+                                        receptionTime: req.body.receptionTime,
+                                        totalMoney: Number.parseFloat(req.body.totalMoney),
+                                        totalMoneyFood: Number.parseFloat(req.body.totalMoneyFood),
+                                        discount: req.body.discount,
+                                        note: req.body.note,
+                                        status: 'waiting',
+                                        createDate: Date.now(),
+                                        guests: req.body.guests
+                                };
+                        }
+                } else {
+                        data = {
+                                idClient: req.body.idClient,
+                                idRestaurant: req.body.idRestaurant,
+                                customerName: req.body.customerName,
+                                customerEmail: req.body.customerEmail,
+                                customerPhone: req.body.customerPhone,
+                                amountPerson: Number.parseInt(req.body.amountPerson),
+                                food: req.body.food,
+                                receptionTime: req.body.receptionTime,
+                                totalMoney: Number.parseFloat(req.body.totalMoney),
+                                totalMoneyFood: Number.parseFloat(req.body.totalMoneyFood),
+                                discount: null,
+                                note: req.body.note,
+                                status: 'waiting',
+                                createDate: Date.now(),
+                                guests: req.body.guests
+                        };
+                }
+
                 const results = await ModelOrder.create(data);
                 if (results === null) {
                         format.error = true;
@@ -228,8 +275,7 @@ app.post('/add-order', async (req, res) => {
                         const user = await ModelUser.findById(results.idClient);
                         if (data.discount !== null) {
                                 if (data.discount.type === 'score') {
-                                        const score = user.score - data.discount.value;
-                                        await ModelUser.updateOne({ _id: results.idClient }, { $set: { score: score } });
+                                        await ModelUser.updateOne({ _id: results.idClient }, { $set: { score: user.score - req.body.discount.value } });
                                 } else {
                                         const idDiscount = data.discount.idDiscount;
                                         let discountUser = user.discount;

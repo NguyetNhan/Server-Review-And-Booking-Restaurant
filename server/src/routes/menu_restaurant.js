@@ -58,7 +58,7 @@ app.get('/list-food-the-best/page/:page', async (req, res) => {
         };
         const page = parseInt(req.params.page);
         try {
-                const countItem = await ModelMenu.countDocuments();
+                const countItem = await ModelMenu.countDocuments({ status: 'open' });
                 format.count_item = countItem;
                 let total_page = countItem / 10;
                 if (countItem === 0) {
@@ -80,7 +80,7 @@ app.get('/list-food-the-best/page/:page', async (req, res) => {
                         } else {
                                 if (page === 1) {
                                         format.page = page;
-                                        const results = await ModelMenu.find().sort({ star: -1 }).limit(10);
+                                        const results = await ModelMenu.find({ status: 'open' }).sort({ star: -1 }).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';
                                                 format.data = results;
@@ -91,7 +91,7 @@ app.get('/list-food-the-best/page/:page', async (req, res) => {
                                         }
                                 } else {
                                         format.page = page;
-                                        const results = await ModelMenu.find().sort({ star: -1 }).skip((page - 1) * 10).limit(10);
+                                        const results = await ModelMenu.find({ status: 'open' }).sort({ star: -1 }).skip((page - 1) * 10).limit(10);
                                         if (results.length > 0) {
                                                 format.message = 'ok';
                                                 format.data = results;
@@ -122,7 +122,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
         };
         const idRestaurant = req.params.id;
         const page = parseInt(req.params.page);
-        const countItem = await ModelMenu.countDocuments({ idRestaurant: idRestaurant });
+        const countItem = await ModelMenu.countDocuments({ idRestaurant: idRestaurant, status: 'open' });
         format.count_item = countItem;
         let total_page = countItem / 10;
         if (countItem === 0) {
@@ -145,7 +145,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
                         res.json(format);
                 } else {
                         if (page === 1) {
-                                const results = await ModelMenu.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).limit(10);
+                                const results = await ModelMenu.find({ idRestaurant: idRestaurant, status: 'open' }).sort({ date_add: -1 }).limit(10);
                                 if (results.length > 0) {
                                         format.message = 'ok';
                                         format.data = results;
@@ -158,7 +158,7 @@ app.get('/idRestaurant/:id/page/:page', async (req, res) => {
                                 }
                         } else {
                                 format.page = page;
-                                const results = await ModelMenu.find({ idRestaurant: idRestaurant }).sort({ date_add: -1 }).skip((page - 1) * 10).limit(10);
+                                const results = await ModelMenu.find({ idRestaurant: idRestaurant, status: 'open' }).sort({ date_add: -1 }).skip((page - 1) * 10).limit(10);
                                 if (results.length > 0) {
                                         format.message = 'ok';
                                         format.data = results;
@@ -264,7 +264,7 @@ app.put('/update/idFood/:idFood', async (req, res) => {
         });
 });
 
-app.delete('/delete/idFood/:idFood', async (req, res) => {
+app.put('/delete/idFood/:idFood', async (req, res) => {
         let format = {
                 error: false,
                 message: '',
@@ -272,7 +272,7 @@ app.delete('/delete/idFood/:idFood', async (req, res) => {
         };
         const idFood = req.params.idFood;
         try {
-                const resultDelete = await ModelMenu.deleteOne({ _id: idFood });
+                const resultDelete = await ModelMenu.updateOne({ _id: idFood }, { status: 'close' });
                 if (resultDelete.ok === 1) {
                         format.message = 'Xóa món ăn thành công !';
                 } else {
