@@ -16,7 +16,7 @@ const OrderSchema = new Schema({
         idRestaurant: String,
         customerName: String,
         customerEmail: String,
-        customerPhone: Number,
+        customerPhone: String,
         amountPerson: Number,
         food: [{
                 idFood: String,

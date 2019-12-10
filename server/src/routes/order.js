@@ -203,7 +203,6 @@ app.post('/add-order', async (req, res) => {
         try {
                 let data = {};
                 if (req.body.discount !== null) {
-                        console.log('req.body.discount: ', req.body.discount);
                         if (req.body.discount.type === 'score') {
                                 data = {
                                         idClient: req.body.idClient,
@@ -470,6 +469,71 @@ app.put('/admin-restaurant/idAdmin/:idAdmin/confirm-order/idOrder/:idOrder', asy
                 format.data = error;
                 res.status(500).json(format);
         }
+});
+
+app.put('/update-order/idOrder/:idOrder', async (req, res) => {
+        let format = {
+                error: false,
+                message: '',
+                data: null
+        };
+        const idOrder = req.params.idOrder;
+        let body = {
+                guests: req.body.guests,
+                food: req.body.food,
+                customerName: req.body.customerName,
+                customerEmail: req.body.customerEmail,
+                customerPhone: req.body.customerPhone,
+                amountPerson: req.body.amountPerson,
+                receptionTime: req.body.receptionTime,
+                note: req.body.note,
+                totalMoneyFood: req.body.totalMoneyFood,
+                totalMoney: req.body.totalMoney,
+        };
+        try {
+                const resultOrder = await ModelOrder.findById(idOrder);
+                if (resultOrder === null) {
+                        format.error = true;
+                        format.message = 'Đơn hàng không tồn tại !';
+                } else {
+                        const resultUpdate = await ModelOrder.updateOne({ _id: idOrder }, body);
+                        if (resultUpdate.ok === 1) {
+                                const user = await ModelUser.findById(resultOrder.idClient);
+                                const restaurant = await ModelRestaurant.findById(resultOrder.idRestaurant);
+                                const date = new Date(body.receptionTime);
+                                const convertTime = `${date.getHours()}h ${date.getMinutes()}''`;
+                                const convertDate = `${date.getDate()} / ${date.getMonth() + 1} / ${date.getFullYear()}`;
+                                for (item of body.guests) {
+                                        await ModelInvite.create({
+                                                idAccountClient: item.idAccount,
+                                                idAccountInvite: resultOrder.idClient,
+                                                idRestaurant: resultOrder.idRestaurant,
+                                                receptionTime: body.receptionTime,
+                                                idOrder: resultOrder._id,
+                                                createDate: Date.now(),
+                                        });
+                                        const notification = {
+                                                idAccount: item.idAccount,
+                                                idDetail: restaurant._id,
+                                                title: user.name,
+                                                content: `đã mời bạn đến tham gia buổi tiệc tại ${restaurant.name} lúc ${convertTime} ngày ${convertDate}!`,
+                                                image: user.avatar,
+                                                type: 'restaurant',
+                                                createDate: Date.now()
+                                        };
+                                        await ModelNotification.create(notification);
+                                }
+                                format.message = 'Cập nhật thành công !';
+                        } else {
+                                format.error = true;
+                                format.message = 'Cập nhật thất bại !';
+                        }
+                }
+        } catch (error) {
+                format.error = true;
+                format.message = 'Cập nhật thất bại ! ' + error.message;
+        }
+        res.json(format);
 });
 
 
