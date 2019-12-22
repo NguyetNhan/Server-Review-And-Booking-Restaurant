@@ -58,8 +58,18 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                         } else {
                                 if (page === 1) {
                                         const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).limit(10);
+                                        const dateNow = Date.now();
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
+                                                for (order of resultOrder) {
+                                                        const receptionTime = new Date(order.receptionTime);
+                                                        if (dateNow > receptionTime) {
+                                                                if (order.status === 'waiting' || order.status === 'activity') {
+                                                                        order.status = 'cancel';
+                                                                        await ModelOrder.updateOne({ _id: order._id }, { status: 'cancel' });
+                                                                }
+                                                        }
+                                                }
                                         } else {
                                                 format.message = 'Không có đơn hàng !';
                                         }
@@ -68,8 +78,18 @@ app.get('/admin/:idAdmin/page/:page/filter/:filter', async (req, res) => {
                                 } else {
                                         format.page = page;
                                         const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
+                                        const dateNow = Date.now();
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
+                                                for (order of resultOrder) {
+                                                        const receptionTime = new Date(order.receptionTime);
+                                                        if (dateNow > receptionTime) {
+                                                                if (order.status === 'waiting' || order.status === 'activity') {
+                                                                        order.status = 'cancel';
+                                                                        await ModelOrder.updateOne({ _id: order._id }, { status: 'cancel' });
+                                                                }
+                                                        }
+                                                }
                                         } else {
                                                 format.message = 'Không có đơn hàng !';
                                         }
@@ -138,8 +158,18 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                         } else {
                                 if (page === 1) {
                                         const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).limit(10);
+                                        const dateNow = Date.now();
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
+                                                for (order of resultOrder) {
+                                                        const receptionTime = new Date(order.receptionTime);
+                                                        if (dateNow > receptionTime) {
+                                                                if (order.status === 'waiting' || order.status === 'activity') {
+                                                                        order.status = 'cancel';
+                                                                        await ModelOrder.updateOne({ _id: order._id }, { status: 'cancel' });
+                                                                }
+                                                        }
+                                                }
                                         } else {
                                                 format.message = 'Không có đơn hàng !';
                                         }
@@ -148,8 +178,18 @@ app.get('/client/:idClient/page/:page/filter/:filter', async (req, res) => {
                                 } else {
                                         format.page = page;
                                         const resultOrder = await ModelOrder.find(options).sort({ createDate: -1 }).skip((page - 1) * 10).limit(10);
+                                        const dateNow = Date.now();
                                         if (resultOrder.length > 0) {
                                                 format.message = 'Thành công !';
+                                                for (order of resultOrder) {
+                                                        const receptionTime = new Date(order.receptionTime);
+                                                        if (dateNow > receptionTime) {
+                                                                if (order.status === 'waiting' || order.status === 'activity') {
+                                                                        order.status = 'cancel';
+                                                                        await ModelOrder.updateOne({ _id: order._id }, { status: 'cancel' });
+                                                                }
+                                                        }
+                                                }
                                         } else {
                                                 format.message = 'Không có đơn hàng !';
                                         }
